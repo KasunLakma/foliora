@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Enums ----------
+
+enum TenantType {
+  INDIVIDUAL
+  AGENCY
+}
+
+enum TenantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+// Platform (SaaS owner) roles. Null for normal tenant users.
+enum PlatformRole {
+  SUPER_ADMIN
+  ADMIN
+  SUPPORT
+}
+
+enum MemberStatus {
+  ACTIVE
+  INVITED
+  REMOVED
+}
+
+enum PermissionScope {
+  TENANT
+  PLATFORM
+}
+
+enum TokenPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+// ---------- Tenancy ----------
+
+// A tenant is an Individual talent or an Agency.
+model Tenant {
+  id            String       @id @default(cuid())
+  type          TenantType
+  name          String
+  status        TenantStatus @default(PENDING)
+  defaultLocale String       @default("en") // "en" or "si"
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?
+
+  members   TenantMember[]
+  roles     Role[]
+  auditLogs AuditLog[]
+
+  @@index([status])
+  @@map("tenants")
+}
+
+// ---------- Identity ----------
+
+model User {
+  id              String        @id @default(cuid())
+  email           String        @unique // always stored lower-case
+  passwordHash    String?
+  name            String
+  locale          String        @default("en")
+  status          UserStatus    @default(ACTIVE)
+  platformRole    PlatformRole?
+  emailVerifiedAt DateTime?
+  lastLoginAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  memberships TenantMember[]
+  tokens      VerificationToken[]
+  auditLogs   AuditLog[]          @relation("AuditActor")
+
+  @@map("users")
+}
+
+// Links a user to a tenant with a role.
+model TenantMember {
+  id        String       @id @default(cuid())
+  tenantId  String
+  userId    String
+  roleId    String
+  status    MemberStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@map("tenant_members")
+}
+
+// ---------- Roles and permissions ----------
+
+// tenantId = null  -> system default role (Owner, Agency Admin, Manager, Editor, Viewer)
+// tenantId = value -> custom role created by that tenant
+model Role {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  key       String
+  name      String
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  permissions RolePermission[]
+  members     TenantMember[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@map("roles")
+}
+
+// Permission catalogue, for example "profile.edit", "media.upload".
+model Permission {
+  id          String          @id @default(cuid())
+  key         String          @unique
+  scope       PermissionScope @default(TENANT)
+  description String?
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ---------- Tokens (email verification, password reset) ----------
+
+// Only a hash of the token is stored, never the token itself.
+model VerificationToken {
+  id        String       @id @default(cuid())
+  userId    String
+  purpose   TokenPurpose
+  tokenHash String       @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@map("verification_tokens")
+}
+
+// ---------- Audit log ----------
+
+// tenantId = null -> platform-level action (done by SaaS admins).
+// Audit rows are never updated or deleted by the application.
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  actorUserId String?
+  action      String   // for example "portfolio.publish", "user.invite"
+  targetType  String?
+  targetId    String?
+  before      Json?
+  after       Json?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  actor  User?   @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([actorUserId])
+  @@index([action])
+  @@map("audit_logs")
+}
