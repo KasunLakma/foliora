@@ -12,6 +12,13 @@ const STATUS: Record<string, { label: string; tone: BadgeTone }> = {
   CLOSED: { label: "Closed", tone: "neutral" },
 };
 
+const TILES = [
+  { label: "Photos", icon: "image" },
+  { label: "Works", icon: "film" },
+  { label: "Inquiries", icon: "mail" },
+  { label: "Profile views", icon: "eye" },
+] satisfies { label: string; icon: IconName }[];
+
 const NEXT_STEPS: { icon: IconName; title: string; text: string }[] = [
   { icon: "user", title: "Build your profile", text: "Your bio, skills and details." },
   { icon: "image", title: "Add photos and a showreel", text: "Headshots, albums and video." },
@@ -22,7 +29,7 @@ const NEXT_STEPS: { icon: IconName; title: string; text: string }[] = [
 export default async function PortalPage() {
   const session = await auth();
   const user = session!.user;
-  const firstName = (user.name ?? "").trim().split(" ")[0] || "there";
+  const displayName = (user.name ?? "").trim() || "there";
 
   const tenant = user.activeTenantId
     ? await prisma.tenant.findUnique({
@@ -38,49 +45,78 @@ export default async function PortalPage() {
   const status = tenant ? (STATUS[tenant.status] ?? STATUS.CLOSED) : null;
 
   return (
-    <div className="flex flex-col gap-5">
-      <section className="bg-velvet relative overflow-hidden rounded-[2rem] px-6 pt-24 pb-6 text-white shadow-xl">
-        <h1 className="font-display text-4xl leading-[1.05] font-semibold tracking-tight">
-          Welcome back, {firstName}
-        </h1>
+    <div className="flex flex-col gap-4">
+      {/* Profile card: photo-first, like the reference dashboard */}
+      <Card className="rounded-[2rem] p-6">
+        <div className="flex items-center gap-4">
+          <span className="bg-brand-gradient rounded-full p-[3px]">
+            <span className="grid size-20 place-items-center rounded-full bg-surface font-display text-3xl font-bold text-brand">
+              {displayName.charAt(0).toUpperCase()}
+            </span>
+          </span>
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-xl font-semibold tracking-[0.08em] uppercase">
+              {displayName}
+            </h1>
+            <p className="truncate text-sm text-muted-foreground">
+              {tenant ? tenant.name : "No account linked"}
+            </p>
+          </div>
+        </div>
+
         {tenant ? (
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-white/80">{tenant.name}</span>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Badge tone="brand">{tenant.type === "AGENCY" ? "Agency" : "Individual"}</Badge>
             {status && <Badge tone={status.tone}>{status.label}</Badge>}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-white/70">
+          <p className="mt-4 text-sm text-muted-foreground">
             No account is linked to this sign-in.
             {user.platformRole ? ` Platform role: ${user.platformRole}.` : ""}
           </p>
         )}
-      </section>
+
+        <ul className="mt-5 grid grid-cols-2 gap-3">
+          {TILES.map((tile) => (
+            <li key={tile.label} className="rounded-2xl bg-white/5 p-4">
+              <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <Icon name={tile.icon} size={16} className="text-brand" />
+                {tile.label}
+              </span>
+              <span className="mt-2 block font-display text-2xl font-semibold">—</span>
+              <span className="text-xs text-white/40">Available soon</span>
+            </li>
+          ))}
+        </ul>
+      </Card>
 
       {tenant?.status === "PENDING" && (
-        <p className="rounded-2xl bg-gilt/20 px-4 py-3 text-sm font-medium text-[#6b4a0e] dark:text-gilt">
+        <p className="rounded-2xl bg-warning/12 px-4 py-3 text-sm font-medium text-warning">
           Your account is waiting for approval. We will let you know as soon as it is approved.
         </p>
       )}
 
       <Card className="p-2">
-        <h2 className="px-3 pt-3 pb-1 font-display text-xl font-semibold">Get started</h2>
-        <ul className="divide-y divide-border">
+        <h2 className="px-4 pt-4 pb-1 font-display text-lg font-semibold tracking-[0.1em] uppercase">
+          Get started
+        </h2>
+        <ul className="divide-y divide-white/8">
           {NEXT_STEPS.map((step) => (
-            <li key={step.title} className="flex items-center gap-4 px-3 py-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface-2 text-brand">
+            <li key={step.title} className="flex items-center gap-4 px-4 py-4">
+              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand/12 text-brand">
                 <Icon name={step.icon} size={22} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{step.title}</span>
                 <span className="block text-sm text-muted-foreground">{step.text}</span>
               </span>
-              <Badge>Coming soon</Badge>
+              <Badge>Soon</Badge>
             </li>
           ))}
         </ul>
       </Card>
 
-      <details className="group rounded-3xl border border-border bg-surface px-5 py-4">
+      <details className="glass-card rounded-[1.75rem] px-5 py-4">
         <summary className="flex cursor-pointer list-none items-center justify-between font-semibold">
           Your access
           <span className="text-sm font-medium text-muted-foreground">{permissions.length} permissions</span>

@@ -40,6 +40,12 @@ const PATHS = {
       <path d="M11 18h2" />
     </>
   ),
+  eye: (
+    <>
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
   check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
 } satisfies Record<string, ReactNode>;
 

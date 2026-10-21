@@ -1,15 +1,14 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-export type BadgeTone = "neutral" | "success" | "warning" | "danger" | "brand" | "gilt";
+export type BadgeTone = "neutral" | "success" | "warning" | "danger" | "brand";
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: "bg-surface-2 text-muted-foreground",
-  success: "bg-success/12 text-success",
+  neutral: "bg-white/8 text-white/65",
+  success: "bg-success/15 text-success",
   warning: "bg-warning/15 text-warning",
-  danger: "bg-danger/12 text-danger",
-  brand: "bg-brand/10 text-brand",
-  gilt: "bg-gilt/20 text-[#7a5410] dark:text-gilt",
+  danger: "bg-danger/15 text-danger",
+  brand: "bg-brand/15 text-brand",
 };
 
 export function Badge({
@@ -24,7 +23,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
         TONES[tone],
         className,
       )}

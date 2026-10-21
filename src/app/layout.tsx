@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Manrope, Noto_Sans_Sinhala, Noto_Serif_Sinhala } from "next/font/google";
+import { Cinzel, Manrope, Noto_Sans_Sinhala, Noto_Serif_Sinhala } from "next/font/google";
 import "./globals.css";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
+const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel", display: "swap" });
 const sinhalaSans = Noto_Sans_Sinhala({
   subsets: ["sinhala"],
   variable: "--font-sinhala-sans",
@@ -33,17 +33,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#1b0a12" },
-    { media: "(prefers-color-scheme: dark)", color: "#120a0e" },
-  ],
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${fraunces.variable} ${sinhalaSans.variable} ${sinhalaSerif.variable}`}
+      className={`${manrope.variable} ${cinzel.variable} ${sinhalaSans.variable} ${sinhalaSerif.variable}`}
     >
       <body className="min-h-dvh font-sans antialiased">{children}</body>
     </html>

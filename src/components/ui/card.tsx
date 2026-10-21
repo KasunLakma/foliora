@@ -2,10 +2,5 @@ import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("rounded-3xl border border-border bg-surface p-5", className)}
-      {...props}
-    />
-  );
+  return <div className={cn("glass-card rounded-[1.75rem] p-5", className)} {...props} />;
 }

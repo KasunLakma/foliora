@@ -26,7 +26,7 @@ function AccountType({
         defaultChecked={defaultChecked}
         className="peer sr-only"
       />
-      <span className="flex h-full flex-col gap-0.5 rounded-2xl border border-border bg-surface p-4 transition peer-checked:border-brand peer-checked:bg-brand/5 peer-checked:ring-4 peer-checked:ring-brand/10 peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30">
+      <span className="flex h-full flex-col gap-0.5 rounded-2xl border border-white/10 bg-white/5 p-4 transition peer-checked:border-brand peer-checked:bg-brand/10 peer-checked:ring-4 peer-checked:ring-brand/15 peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30">
         <span className="font-semibold">{title}</span>
         <span className="text-xs text-muted-foreground">{text}</span>
       </span>
@@ -39,14 +39,14 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Create your account</h1>
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-2xl font-semibold tracking-[0.12em] uppercase">Create account</h1>
         <p className="text-muted-foreground">Set up your portfolio in a few minutes.</p>
       </div>
 
       <form action={action} className="flex flex-col gap-4">
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1.5 text-sm font-semibold">I am registering as</legend>
+          <legend className="mb-2 text-sm font-semibold text-white/85">I am registering as</legend>
           <div className="grid grid-cols-2 gap-3">
             <AccountType value="INDIVIDUAL" title="Individual" text="Actor, actress or model" defaultChecked />
             <AccountType value="AGENCY" title="Agency" text="Manage several talents" />
@@ -74,7 +74,7 @@ export default function RegisterPage() {
         </Field>
 
         {state?.error && (
-          <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
+          <p role="alert" className="rounded-2xl bg-danger/12 px-4 py-3 text-sm font-medium text-danger">
             {state.error}
           </p>
         )}

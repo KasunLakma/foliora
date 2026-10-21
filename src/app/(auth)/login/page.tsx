@@ -11,8 +11,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back</h1>
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-2xl font-semibold tracking-[0.12em] uppercase">Welcome back</h1>
         <p className="text-muted-foreground">Sign in to manage your portfolio.</p>
       </div>
 
@@ -31,7 +31,7 @@ export default function LoginPage() {
         </Field>
 
         {state?.error && (
-          <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
+          <p role="alert" className="rounded-2xl bg-danger/12 px-4 py-3 text-sm font-medium text-danger">
             {state.error}
           </p>
         )}

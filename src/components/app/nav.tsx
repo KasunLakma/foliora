@@ -20,47 +20,47 @@ function isActive(pathname: string, href: string) {
   return href === "/portal" ? pathname === "/portal" : pathname.startsWith(href);
 }
 
-/** Phone: bottom tab bar, like a native app. */
+/** Phone: a floating pill tab bar. The active tab expands to show its name. */
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
     <nav
       aria-label="Main"
-      className="glass fixed inset-x-0 bottom-0 z-40 border-t border-border md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
     >
-      <ul className="mx-auto flex max-w-md items-stretch justify-around px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+      <ul className="glass mx-auto flex max-w-md items-center justify-between rounded-full border border-white/10 p-1.5 shadow-2xl shadow-black/60">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
-          const inner = (
+          const base = "flex h-12 items-center justify-center gap-2 rounded-full px-3.5 transition";
+          const content = (
             <>
-              <span
-                className={cn(
-                  "grid h-8 w-14 place-items-center rounded-full transition",
-                  active && "bg-brand/12 text-brand",
-                )}
-              >
-                <Icon name={item.icon} size={22} />
-              </span>
-              <span className={cn(active && "text-brand")}>{item.label}</span>
+              <Icon name={item.icon} size={22} />
+              {active && <span className="text-sm font-semibold">{item.label}</span>}
             </>
           );
-          const base =
-            "flex flex-col items-center gap-0.5 rounded-2xl py-1 text-[11px] font-semibold";
 
           return (
-            <li key={item.href} className="flex-1">
+            <li key={item.href}>
               {item.soon ? (
-                <span aria-disabled="true" className={cn(base, "text-muted-foreground opacity-45")}>
-                  {inner}
+                <span
+                  aria-disabled="true"
+                  aria-label={`${item.label} (coming soon)`}
+                  className={cn(base, "text-white/30")}
+                >
+                  {content}
                 </span>
               ) : (
                 <Link
                   href={item.href}
+                  aria-label={item.label}
                   aria-current={active ? "page" : undefined}
-                  className={cn(base, "text-muted-foreground active:scale-95")}
+                  className={cn(
+                    base,
+                    active ? "bg-brand-gradient text-on-brand" : "text-white/65 active:scale-95",
+                  )}
                 >
-                  {inner}
+                  {content}
                 </Link>
               )}
             </li>
@@ -71,20 +71,20 @@ export function BottomNav() {
   );
 }
 
-/** Tablet and desktop: a velvet side rail. */
+/** Tablet and desktop: a glass side rail. */
 export function SideNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="bg-velvet fixed inset-y-0 left-0 hidden w-64 flex-col gap-10 p-5 text-white md:flex">
-      <Logo inverse size={36} />
+    <aside className="glass fixed inset-y-0 left-0 hidden w-64 flex-col gap-10 border-r border-white/8 p-5 md:flex">
+      <Logo size={38} />
       <nav aria-label="Main">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => {
             const active = isActive(pathname, item.href);
             const row = cn(
               "flex items-center gap-3 rounded-2xl px-3 py-3 text-[15px] font-semibold transition",
-              active ? "bg-white/12 text-gilt" : "text-white/70",
+              active ? "bg-white/8 text-brand" : "text-white/65",
             );
             return (
               <li key={item.href}>
@@ -98,7 +98,7 @@ export function SideNav() {
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={cn(row, "hover:bg-white/8")}
+                    className={cn(row, "hover:bg-white/6")}
                   >
                     <Icon name={item.icon} size={20} />
                     {item.label}

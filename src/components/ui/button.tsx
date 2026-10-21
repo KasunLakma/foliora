@@ -1,15 +1,14 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "gilt" | "secondary" | "light" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "light" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-brand-gradient text-white shadow-lg shadow-brand/25 hover:brightness-110",
-  gilt: "bg-gilt text-[#2a0f1b] shadow-lg shadow-gilt/20 hover:brightness-105",
-  secondary: "border border-border bg-surface text-foreground hover:bg-surface-2",
-  light: "border border-white/25 text-white hover:bg-white/10",
-  ghost: "text-foreground hover:bg-surface-2",
+  primary: "bg-brand-gradient text-on-brand shadow-lg shadow-brand/25 hover:brightness-110",
+  secondary: "glass-card text-foreground hover:bg-white/10",
+  light: "bg-white text-black hover:bg-white/90",
+  ghost: "text-foreground hover:bg-white/8",
 };
 
 const SIZES: Record<ButtonSize, string> = {
@@ -18,14 +17,14 @@ const SIZES: Record<ButtonSize, string> = {
   lg: "h-14 px-7 text-base",
 };
 
-/** Use on a <Link> too: className={buttonStyles({ variant: "gilt", size: "lg" })} */
+/** Use on a <Link> too: className={buttonStyles({ variant: "primary", size: "lg" })} */
 export function buttonStyles({
   variant = "primary",
   size = "md",
   full = false,
 }: { variant?: ButtonVariant; size?: ButtonSize; full?: boolean } = {}) {
   return cn(
-    "inline-flex select-none items-center justify-center gap-2 rounded-2xl font-semibold transition",
+    "inline-flex select-none items-center justify-center gap-2 rounded-full font-semibold transition",
     "active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
     VARIANTS[variant],
