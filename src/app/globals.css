@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
+/* Foliora design tokens: "Velvet and Gilt" (theatre curtain crimson + marquee gold) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f4f3;
+  --foreground: #1a0f14;
+  --surface: #ffffff;
+  --surface-2: #efebea;
+  --border: #e6dfdf;
+  --muted-foreground: #74686d;
+  --brand: #b3123f;
+  --gilt: #d9a441;
+  --success: #178a55;
+  --warning: #b7791f;
+  --danger: #d13b1f;
+  --brand-gradient: linear-gradient(135deg, #d0225b 0%, #9e1245 55%, #6f0e36 100%);
+  --glass-bg: rgba(255, 255, 255, 0.78);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #120a0e;
+    --foreground: #faf2f5;
+    --surface: #1d1117;
+    --surface-2: #26171f;
+    --border: #38232c;
+    --muted-foreground: #b4a3aa;
+    --brand: #e0356b;
+    --glass-bg: rgba(29, 17, 23, 0.8);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-brand: var(--brand);
+  --color-gilt: var(--gilt);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-manrope), var(--font-sinhala-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), var(--font-sinhala-serif), ui-serif, Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light dark;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+}
+
+/* Crimson gradient: used for primary buttons only */
+@utility bg-brand-gradient {
+  background-image: var(--brand-gradient);
+}
+
+/* The memorable element: a dark velvet curtain with a gold spotlight */
+@utility bg-velvet {
+  background-color: #1b0a12;
+  background-image:
+    radial-gradient(55% 45% at 50% 0%, rgba(217, 164, 65, 0.42), transparent 72%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 22px),
+    linear-gradient(180deg, #2a0f1b 0%, #1b0a12 60%, #12060c 100%);
+}
+
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}
+
+/* One orchestrated entrance: the sign-in sheet rising from the bottom */
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-sheet {
+  animation: sheet-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

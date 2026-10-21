@@ -2,31 +2,51 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { Button } from "@/components/ui/button";
+import { Field, Input } from "@/components/ui/field";
 import { loginAction } from "@/modules/auth/actions";
 
 export default function LoginPage() {
-    const [state, action, pending] = useActionState(loginAction, undefined);
+  const [state, action, pending] = useActionState(loginAction, undefined);
 
-    return (
-        <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-            <h1 className="text-2xl font-semibold">Sign in to Foliora</h1>
-            <form action={action} className="flex flex-col gap-4">
-                <label className="flex flex-col gap-1 text-sm">
-                    Email
-                    <input name="email" type="email" required autoComplete="email" className="rounded border px-3 py-2" />
-                </label>
-                <label className="flex flex-col gap-1 text-sm">
-                    Password
-                    <input name="password" type="password" required autoComplete="current-password" className="rounded border px-3 py-2" />
-                </label>
-                {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-                <button disabled={pending} className="rounded bg-black px-4 py-2 text-white disabled:opacity-50">
-                    {pending ? "Signing in..." : "Sign in"}
-                </button>
-            </form>
-            <p className="text-sm">
-                No account? <Link href="/register" className="underline">Create one</Link>
-            </p>
-        </main>
-    );
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="text-muted-foreground">Sign in to manage your portfolio.</p>
+      </div>
+
+      <form action={action} className="flex flex-col gap-4">
+        <Field label="Email">
+          <Input name="email" type="email" required autoComplete="email" placeholder="you@example.com" />
+        </Field>
+        <Field label="Password">
+          <Input
+            name="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            placeholder="Your password"
+          />
+        </Field>
+
+        {state?.error && (
+          <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger">
+            {state.error}
+          </p>
+        )}
+
+        <Button type="submit" size="lg" full loading={pending}>
+          {pending ? "Signing in" : "Sign in"}
+        </Button>
+      </form>
+
+      <p className="text-center text-sm text-muted-foreground">
+        New to Foliora?{" "}
+        <Link href="/register" className="font-semibold text-brand underline-offset-4 hover:underline">
+          Create an account
+        </Link>
+      </p>
+    </div>
+  );
 }
