@@ -65,6 +65,7 @@ model Tenant {
   members   TenantMember[]
   roles     Role[]
   auditLogs AuditLog[]
+  profiles  TalentProfile[]
 
   @@index([status])
   @@map("tenants")
@@ -199,4 +200,97 @@ model AuditLog {
   @@index([actorUserId])
   @@index([action])
   @@map("audit_logs")
+}
+// ---------- Talent profile (Phase 2) ----------
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  OTHER
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  YOUTUBE
+  IMDB
+  LINKEDIN
+  X
+  WEBSITE
+}
+
+// One per individual tenant, many per agency tenant.
+model TalentProfile {
+  id          String    @id @default(cuid())
+  tenantId    String
+  stageName   String
+  legalName   String? // private, never shown publicly
+  taglineEn   String?
+  taglineSi   String?
+  bioEn       String?
+  bioSi       String?
+  gender      Gender?
+  birthYear   Int? // year only, for privacy
+  location    String?
+  nationality String?
+  heightCm    Int?
+  build       String?
+  eyeColor    String?
+  hairColor   String?
+  languages   String[] // for example ["si", "en", "ta"]
+  visibility  Json? // per-field public/hidden switches
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  skills      ProfileSkill[]
+  socialLinks SocialLink[]
+
+  @@index([tenantId])
+  @@map("talent_profiles")
+}
+
+model SocialLink {
+  id        String         @id @default(cuid())
+  tenantId  String
+  profileId String
+  platform  SocialPlatform
+  url       String
+  sortOrder Int            @default(0)
+
+  profile TalentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, platform])
+  @@index([tenantId])
+  @@map("social_links")
+}
+
+// Shared skill catalogue (same for every tenant).
+model Skill {
+  id        String  @id @default(cuid())
+  key       String  @unique
+  category  String
+  nameEn    String
+  nameSi    String
+  sortOrder Int     @default(0)
+
+  profiles ProfileSkill[]
+
+  @@map("skills")
+}
+
+model ProfileSkill {
+  tenantId  String
+  profileId String
+  skillId   String
+
+  profile TalentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  skill   Skill         @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, skillId])
+  @@index([tenantId])
+  @@map("profile_skills")
 }

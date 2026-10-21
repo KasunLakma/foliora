@@ -2,7 +2,13 @@
 import { prisma } from "./prisma";
 
 // Models that have a tenantId column and are ALWAYS filtered by it.
-export const TENANT_SCOPED_MODELS = ["TenantMember", "AuditLog"] as const;
+export const TENANT_SCOPED_MODELS = [
+  "TenantMember",
+  "AuditLog",
+  "TalentProfile",
+  "SocialLink",
+  "ProfileSkill",
+] as const;
 
 // Models with a tenantId column that are handled by hand.
 // Role: tenantId is null for system roles, so it cannot use the automatic filter.
