@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
+import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon, type IconName } from "@/components/ui/icons";
 import { prisma } from "@/lib/db/prisma";
+import { ensureProfile, getProfile, scoreProfile } from "@/modules/profiles/service";
 import { getTenantPermissions } from "@/modules/roles/permissions";
 
 const STATUS: Record<string, { label: string; tone: BadgeTone }> = {
@@ -20,7 +23,6 @@ const TILES = [
 ] satisfies { label: string; icon: IconName }[];
 
 const NEXT_STEPS: { icon: IconName; title: string; text: string }[] = [
-  { icon: "user", title: "Build your profile", text: "Your bio, skills and details." },
   { icon: "image", title: "Add photos and a showreel", text: "Headshots, albums and video." },
   { icon: "film", title: "Find casting calls", text: "Apply with your portfolio." },
   { icon: "mail", title: "Answer inquiries", text: "Replies from directors and brands." },
@@ -38,6 +40,13 @@ export default async function PortalPage() {
       })
     : null;
 
+  let completeness: { percent: number; missing: string[] } | null = null;
+  if (user.activeTenantId && tenant?.type === "INDIVIDUAL") {
+    await ensureProfile(user.activeTenantId);
+    const profile = await getProfile(user.activeTenantId);
+    if (profile) completeness = scoreProfile(profile);
+  }
+
   const permissions = user.activeTenantId
     ? [...(await getTenantPermissions(user.id, user.activeTenantId))].sort()
     : [];
@@ -46,7 +55,6 @@ export default async function PortalPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Profile card: photo-first, like the reference dashboard */}
       <Card className="rounded-[2rem] p-6">
         <div className="flex items-center gap-4">
           <span className="bg-brand-gradient rounded-full p-[3px]">
@@ -96,9 +104,35 @@ export default async function PortalPage() {
         </p>
       )}
 
+      {completeness && (
+        <Card>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-semibold tracking-[0.1em] uppercase">Your profile</h2>
+            <span className="font-display text-2xl font-semibold text-brand">{completeness.percent}%</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-valuenow={completeness.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"
+          >
+            <div className="bg-brand-gradient h-full rounded-full" style={{ width: `${completeness.percent}%` }} />
+          </div>
+          {completeness.missing.length > 0 && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Next: {completeness.missing.slice(0, 3).join(", ").toLowerCase()}.
+            </p>
+          )}
+          <Link href="/portal/profile" className={buttonStyles({ size: "md" }) + " mt-4"}>
+            {completeness.percent === 100 ? "View your profile" : "Continue your profile"}
+          </Link>
+        </Card>
+      )}
+
       <Card className="p-2">
         <h2 className="px-4 pt-4 pb-1 font-display text-lg font-semibold tracking-[0.1em] uppercase">
-          Get started
+          Coming next
         </h2>
         <ul className="divide-y divide-white/8">
           {NEXT_STEPS.map((step) => (

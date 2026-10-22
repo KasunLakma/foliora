@@ -10,7 +10,7 @@ type NavItem = { href: string; label: string; icon: IconName; soon?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/portal", label: "Home", icon: "home" },
-  { href: "/portal/profile", label: "Profile", icon: "user", soon: true },
+  { href: "/portal/profile", label: "Profile", icon: "user" },
   { href: "/portal/media", label: "Media", icon: "image", soon: true },
   { href: "/portal/casting", label: "Casting", icon: "film", soon: true },
   { href: "/portal/inbox", label: "Inbox", icon: "mail", soon: true },
