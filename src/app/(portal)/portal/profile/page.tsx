@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { Card } from "@/components/ui/card";
+import { toFormValues } from "@/modules/profiles/form-values";
 import { ensureProfile, getProfile, listSkills, scoreProfile } from "@/modules/profiles/service";
-import type { ProfileFormValues } from "@/modules/profiles/types";
 import { hasPermission } from "@/modules/roles/permissions";
 
 export const metadata = { title: "Profile" };
@@ -40,26 +40,6 @@ export default async function ProfilePage() {
 
   const { percent } = scoreProfile(profile);
 
-  const values: ProfileFormValues = {
-    stageName: profile.stageName,
-    legalName: profile.legalName ?? "",
-    taglineEn: profile.taglineEn ?? "",
-    taglineSi: profile.taglineSi ?? "",
-    bioEn: profile.bioEn ?? "",
-    bioSi: profile.bioSi ?? "",
-    gender: profile.gender ?? "",
-    birthYear: profile.birthYear?.toString() ?? "",
-    location: profile.location ?? "",
-    nationality: profile.nationality ?? "",
-    heightCm: profile.heightCm?.toString() ?? "",
-    build: profile.build ?? "",
-    eyeColor: profile.eyeColor ?? "",
-    hairColor: profile.hairColor ?? "",
-    languages: profile.languages,
-    skillIds: profile.skills.map((s) => s.skillId),
-    social: Object.fromEntries(profile.socialLinks.map((l) => [l.platform, l.url])),
-  };
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-end justify-between gap-4 px-1">
@@ -67,7 +47,7 @@ export default async function ProfilePage() {
         <span className="text-sm font-semibold text-brand">{percent}% complete</span>
       </div>
       <ProfileForm
-        values={values}
+        values={toFormValues(profile)}
         skills={skills.map((s) => ({
           id: s.id,
           key: s.key,
