@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
+import { format } from "@/lib/i18n/format";
+import { useI18n } from "@/lib/i18n/provider";
 import { saveProfileAction } from "@/modules/profiles/actions";
 import {
   GENDERS,
-  GENDER_LABELS,
-  LANGUAGES,
-  SKILL_CATEGORY_LABELS,
+  LANGUAGE_CODES,
   SOCIAL_LABELS,
   SOCIAL_PLATFORMS,
 } from "@/modules/profiles/constants";
@@ -21,7 +21,7 @@ const textareaClass =
   "min-h-32 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-base text-foreground " +
   "placeholder:text-white/35 outline-none transition focus:border-brand focus:bg-white/8 focus:ring-4 focus:ring-brand/20";
 
-const STEPS = ["Basics", "Your look", "Skills", "Links"] as const;
+const STEP_KEYS = ["basics", "look", "skills", "links"] as const;
 
 function Chip({
   name,
@@ -70,11 +70,13 @@ export function ProfileForm({
   canEdit: boolean;
   mode?: "full" | "wizard";
 }) {
+  const { t, locale } = useI18n();
+  const f = t.form;
   const wizard = mode === "wizard";
   const router = useRouter();
   const [state, action, pending] = useActionState(saveProfileAction, undefined);
   const [step, setStep] = useState(0);
-  const last = STEPS.length - 1;
+  const last = STEP_KEYS.length - 1;
 
   // After the wizard is saved, go to the dashboard.
   useEffect(() => {
@@ -91,95 +93,98 @@ export function ProfileForm({
     return acc;
   }, {});
 
+  const categoryName = (category: string) =>
+    (t.skillCategories as Record<string, string>)[category] ?? category;
+
   // Every step stays in the page (hidden when not shown), so all values are submitted together.
   const steps: React.ReactNode[] = [
     <>
-      <Section title="Basics">
-        <Field label="Stage name" hint="This is the name shown on your portfolio.">
+      <Section title={f.sections.basics}>
+        <Field label={f.fields.stageName} hint={f.fields.stageNameHint}>
           <Input name="stageName" required defaultValue={values.stageName} />
         </Field>
-        <Field label="Legal name" hint="Private. Never shown publicly.">
+        <Field label={f.fields.legalName} hint={f.fields.legalNameHint}>
           <Input name="legalName" defaultValue={values.legalName} />
         </Field>
-        <Field label="Tagline (English)">
-          <Input name="taglineEn" defaultValue={values.taglineEn} placeholder="One line about you" />
+        <Field label={f.fields.taglineEn}>
+          <Input name="taglineEn" defaultValue={values.taglineEn} placeholder={f.fields.taglineEnPlaceholder} />
         </Field>
-        <Field label="Tagline (Sinhala)">
-          <Input name="taglineSi" defaultValue={values.taglineSi} placeholder="ඔබ ගැන එක් පේළියක්" />
+        <Field label={f.fields.taglineSi}>
+          <Input name="taglineSi" defaultValue={values.taglineSi} placeholder={f.fields.taglineSiPlaceholder} />
         </Field>
       </Section>
-      <Section title="About you" hint="Write in one language or both. Visitors see the one that matches their language.">
-        <Field label="Bio (English)">
+      <Section title={f.sections.about} hint={f.sections.aboutHint}>
+        <Field label={f.fields.bioEn}>
           <textarea name="bioEn" defaultValue={values.bioEn} className={textareaClass} />
         </Field>
-        <Field label="Bio (Sinhala)">
+        <Field label={f.fields.bioSi}>
           <textarea name="bioSi" defaultValue={values.bioSi} className={textareaClass} />
         </Field>
       </Section>
     </>,
 
-    <Section title="Details">
+    <Section title={f.sections.details}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Gender">
+        <Field label={f.fields.gender}>
           <Select name="gender" defaultValue={values.gender}>
-            <option value="">Prefer not to say</option>
+            <option value="">{f.fields.genderNone}</option>
             {GENDERS.map((g) => (
               <option key={g} value={g}>
-                {GENDER_LABELS[g]}
+                {t.genders[g]}
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Birth year">
+        <Field label={f.fields.birthYear}>
           <Input name="birthYear" inputMode="numeric" defaultValue={values.birthYear} placeholder="1995" />
         </Field>
-        <Field label="Location">
-          <Input name="location" defaultValue={values.location} placeholder="Colombo, Sri Lanka" />
+        <Field label={f.fields.location}>
+          <Input name="location" defaultValue={values.location} placeholder={f.fields.locationPlaceholder} />
         </Field>
-        <Field label="Nationality">
+        <Field label={f.fields.nationality}>
           <Input name="nationality" defaultValue={values.nationality} />
         </Field>
-        <Field label="Height (cm)">
+        <Field label={f.fields.height}>
           <Input name="heightCm" inputMode="numeric" defaultValue={values.heightCm} placeholder="175" />
         </Field>
-        <Field label="Build">
-          <Input name="build" defaultValue={values.build} placeholder="Athletic" />
+        <Field label={f.fields.build}>
+          <Input name="build" defaultValue={values.build} placeholder={f.fields.buildPlaceholder} />
         </Field>
-        <Field label="Eye colour">
+        <Field label={f.fields.eyeColor}>
           <Input name="eyeColor" defaultValue={values.eyeColor} />
         </Field>
-        <Field label="Hair">
+        <Field label={f.fields.hair}>
           <Input name="hairColor" defaultValue={values.hairColor} />
         </Field>
       </div>
     </Section>,
 
     <>
-      <Section title="Languages">
+      <Section title={f.sections.languages}>
         <div className="flex flex-wrap gap-2">
-          {LANGUAGES.map((lang) => (
+          {LANGUAGE_CODES.map((code) => (
             <Chip
-              key={lang.code}
+              key={code}
               name="languages"
-              value={lang.code}
-              label={lang.label}
-              defaultChecked={values.languages.includes(lang.code)}
+              value={code}
+              label={t.languages[code]}
+              defaultChecked={values.languages.includes(code)}
             />
           ))}
         </div>
       </Section>
-      <Section title="Skills" hint="Choose everything you can do. Casting directors can search by skill.">
+      <Section title={f.sections.skills} hint={f.sections.skillsHint}>
         {Object.entries(groups).map(([category, items]) => (
           <div key={category} className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold text-white/70">{SKILL_CATEGORY_LABELS[category] ?? category}</h3>
+            <h3 className="text-sm font-semibold text-white/70">{categoryName(category)}</h3>
             <div className="flex flex-wrap gap-2">
               {items.map((skill) => (
                 <Chip
                   key={skill.id}
                   name="skillIds"
                   value={skill.id}
-                  label={skill.nameEn}
-                  sub={skill.nameSi}
+                  label={locale === "si" ? skill.nameSi : skill.nameEn}
+                  sub={locale === "si" ? skill.nameEn : skill.nameSi}
                   defaultChecked={values.skillIds.includes(skill.id)}
                 />
               ))}
@@ -189,7 +194,7 @@ export function ProfileForm({
       </Section>
     </>,
 
-    <Section title="Social links" hint="Paste a link or a web address. Leave blank what you do not use.">
+    <Section title={f.sections.social} hint={f.sections.socialHint}>
       <div className="grid gap-4 sm:grid-cols-2">
         {SOCIAL_PLATFORMS.map((platform) => (
           <Field key={platform} label={SOCIAL_LABELS[platform]}>
@@ -214,15 +219,19 @@ export function ProfileForm({
       {wizard && (
         <div className="flex flex-col gap-2 px-1">
           <ol className="flex gap-2" aria-hidden="true">
-            {STEPS.map((label, i) => (
+            {STEP_KEYS.map((key, i) => (
               <li
-                key={label}
+                key={key}
                 className={cn("h-1.5 flex-1 rounded-full", i <= step ? "bg-brand-gradient" : "bg-white/10")}
               />
             ))}
           </ol>
           <p className="text-sm font-semibold text-muted-foreground">
-            Step {step + 1} of {STEPS.length} · {STEPS[step]}
+            {format(f.stepOf, {
+              step: step + 1,
+              total: STEP_KEYS.length,
+              name: f.steps[STEP_KEYS[step]],
+            })}
           </p>
         </div>
       )}
@@ -245,15 +254,15 @@ export function ProfileForm({
           <div className={barClass}>
             <div className={barInner}>
               <Button type="button" variant="ghost" onClick={() => go(step - 1)} disabled={step === 0}>
-                Back
+                {t.common.back}
               </Button>
               {step < last ? (
                 <Button type="button" onClick={() => go(step + 1)}>
-                  Next
+                  {t.common.next}
                 </Button>
               ) : (
                 <Button type="submit" loading={pending} disabled={!canEdit}>
-                  Finish
+                  {t.common.finish}
                 </Button>
               )}
             </div>
@@ -272,15 +281,10 @@ export function ProfileForm({
                     : "text-sm text-muted-foreground"
               }
             >
-              {state?.error ??
-                (state?.saved
-                  ? "Profile saved."
-                  : canEdit
-                    ? "Press Save to keep your changes."
-                    : "You can view this profile but not edit it.")}
+              {state?.error ?? (state?.saved ? f.saved : canEdit ? f.saveHint : f.readOnly)}
             </p>
             <Button type="submit" loading={pending} disabled={!canEdit}>
-              Save profile
+              {f.save}
             </Button>
           </div>
         </div>

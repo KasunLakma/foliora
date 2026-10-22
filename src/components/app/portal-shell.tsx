@@ -1,9 +1,11 @@
 import { BottomNav, SideNav } from "@/components/app/nav";
+import { LanguageSwitch } from "@/components/app/language-switch";
 import { Icon } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/logo";
+import { getDictionary } from "@/lib/i18n/server";
 import { signOutAction } from "@/modules/auth/actions";
 
-export function PortalShell({
+export async function PortalShell({
   userName,
   tenantName,
   children,
@@ -12,6 +14,7 @@ export function PortalShell({
   tenantName: string | null;
   children: React.ReactNode;
 }) {
+  const { t } = await getDictionary();
   const initial = userName.trim().charAt(0).toUpperCase() || "F";
 
   return (
@@ -27,6 +30,7 @@ export function PortalShell({
               {tenantName ?? "Foliora"}
             </p>
             <div className="flex items-center gap-1.5">
+              <LanguageSwitch />
               <span
                 title={userName}
                 className="bg-brand-gradient grid size-10 place-items-center rounded-full text-sm font-bold text-on-brand"
@@ -35,7 +39,8 @@ export function PortalShell({
               </span>
               <form action={signOutAction}>
                 <button
-                  aria-label="Sign out"
+                  aria-label={t.common.signOut}
+                  title={t.common.signOut}
                   className="glass-card grid size-10 place-items-center rounded-full text-white/70 transition hover:text-white active:scale-95"
                 >
                   <Icon name="logout" size={18} />

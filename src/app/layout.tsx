@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cinzel, Manrope, Noto_Sans_Sinhala, Noto_Serif_Sinhala } from "next/font/google";
+import { getDictionary } from "@/lib/i18n/server";
+import { I18nProvider } from "@/lib/i18n/provider";
 import "./globals.css";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
@@ -36,13 +38,19 @@ export const viewport: Viewport = {
   themeColor: "#09090b",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { locale, t } = await getDictionary();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${manrope.variable} ${cinzel.variable} ${sinhalaSans.variable} ${sinhalaSerif.variable}`}
     >
-      <body className="min-h-dvh font-sans antialiased">{children}</body>
+      <body className="min-h-dvh font-sans antialiased">
+        <I18nProvider locale={locale} t={t}>
+          {children}
+        </I18nProvider>
+      </body>
     </html>
   );
 }

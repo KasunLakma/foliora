@@ -3,7 +3,8 @@
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { signIn, signOut } from "@/auth";
-import { loginSchema, registerSchema } from "@/modules/auth/schema";
+import { getDictionary } from "@/lib/i18n/server";
+import { createRegisterSchema, loginSchema } from "@/modules/auth/schema";
 import { EmailTakenError, registerUser } from "@/modules/auth/service";
 
 export type FormState = { error?: string } | undefined;
@@ -12,11 +13,12 @@ export async function loginAction(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const { t } = await getDictionary();
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
-  if (!parsed.success) return { error: "Enter a valid email and password." };
+  if (!parsed.success) return { error: t.auth.errors.enterValid };
 
   try {
     await signIn("credentials", {
@@ -25,7 +27,7 @@ export async function loginAction(
       redirectTo: "/portal",
     });
   } catch (error) {
-    if (error instanceof AuthError) return { error: "Invalid email or password." };
+    if (error instanceof AuthError) return { error: t.auth.errors.invalidLogin };
     throw error; // the redirect itself must be re-thrown
   }
 }
@@ -34,7 +36,8 @@ export async function registerAction(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const parsed = registerSchema.safeParse({
+  const { t } = await getDictionary();
+  const parsed = createRegisterSchema(t.auth.errors).safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
@@ -42,7 +45,7 @@ export async function registerAction(
     tenantName: formData.get("tenantName"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
+    return { error: parsed.error.issues[0]?.message ?? t.auth.errors.generic };
   }
 
   const h = await headers();
@@ -52,7 +55,7 @@ export async function registerAction(
   try {
     await registerUser(parsed.data, { ip, userAgent });
   } catch (error) {
-    if (error instanceof EmailTakenError) return { error: error.message };
+    if (error instanceof EmailTakenError) return { error: t.auth.errors.emailTaken };
     throw error;
   }
 
@@ -64,7 +67,7 @@ export async function registerAction(
       redirectTo: parsed.data.accountType === "INDIVIDUAL" ? "/portal/welcome" : "/portal",
     });
   } catch (error) {
-    if (error instanceof AuthError) return { error: "Account created. Please sign in." };
+    if (error instanceof AuthError) return { error: t.auth.errors.createdSignIn };
     throw error;
   }
 }

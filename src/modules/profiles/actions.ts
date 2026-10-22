@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { ForbiddenError } from "@/lib/errors";
+import { getDictionary } from "@/lib/i18n/server";
 import { requirePermission } from "@/modules/roles/permissions";
 import { SOCIAL_PLATFORMS } from "./constants";
-import { profileSchema } from "./schema";
+import { createProfileSchema } from "./schema";
 import { updateProfile } from "./service";
 
 export type ProfileFormState = { error?: string; saved?: boolean } | undefined;
@@ -46,24 +47,24 @@ export async function saveProfileAction(
   _prev: ProfileFormState,
   formData: FormData,
 ): Promise<ProfileFormState> {
+  const { t } = await getDictionary();
+
   // The tenant always comes from the signed-in session, never from the form.
   const session = await auth();
   const userId = session?.user?.id;
   const tenantId = session?.user?.activeTenantId;
-  if (!userId || !tenantId) return { error: "Please sign in again." };
+  if (!userId || !tenantId) return { error: t.profileErrors.signInAgain };
 
   try {
     await requirePermission(userId, tenantId, "profile.edit");
   } catch (error) {
-    if (error instanceof ForbiddenError) {
-      return { error: "You do not have permission to edit this profile." };
-    }
+    if (error instanceof ForbiddenError) return { error: t.profileErrors.noPermission };
     throw error;
   }
 
-  const parsed = profileSchema.safeParse(readForm(formData));
+  const parsed = createProfileSchema(t.profileErrors).safeParse(readForm(formData));
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
+    return { error: parsed.error.issues[0]?.message ?? t.profileErrors.generic };
   }
 
   await updateProfile(tenantId, userId, parsed.data);

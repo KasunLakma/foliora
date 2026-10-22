@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
+import { useI18n } from "@/lib/i18n/provider";
 import { registerAction } from "@/modules/auth/actions";
 
 function AccountType({
@@ -35,41 +36,43 @@ function AccountType({
 }
 
 export default function RegisterPage() {
+  const { t } = useI18n();
+  const r = t.auth.register;
   const [state, action, pending] = useActionState(registerAction, undefined);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="font-display text-2xl font-semibold tracking-[0.12em] uppercase">Create account</h1>
-        <p className="text-muted-foreground">Set up your portfolio in a few minutes.</p>
+        <h1 className="font-display text-2xl font-semibold tracking-[0.12em] uppercase">{r.title}</h1>
+        <p className="text-muted-foreground">{r.subtitle}</p>
       </div>
 
       <form action={action} className="flex flex-col gap-4">
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-semibold text-white/85">I am registering as</legend>
+          <legend className="mb-2 text-sm font-semibold text-white/85">{r.registeringAs}</legend>
           <div className="grid grid-cols-2 gap-3">
-            <AccountType value="INDIVIDUAL" title="Individual" text="Actor, actress or model" defaultChecked />
-            <AccountType value="AGENCY" title="Agency" text="Manage several talents" />
+            <AccountType value="INDIVIDUAL" title={r.individual} text={r.individualText} defaultChecked />
+            <AccountType value="AGENCY" title={r.agency} text={r.agencyText} />
           </div>
         </fieldset>
 
-        <Field label="Your name">
-          <Input name="name" required autoComplete="name" placeholder="Full name" />
+        <Field label={r.name}>
+          <Input name="name" required autoComplete="name" placeholder={r.namePlaceholder} />
         </Field>
-        <Field label="Stage name or agency name" hint="This is shown on your portfolio.">
-          <Input name="tenantName" required placeholder="How you want to be known" />
+        <Field label={r.tenantName} hint={r.tenantNameHint}>
+          <Input name="tenantName" required placeholder={r.tenantNamePlaceholder} />
         </Field>
-        <Field label="Email">
-          <Input name="email" type="email" required autoComplete="email" placeholder="you@example.com" />
+        <Field label={r.email}>
+          <Input name="email" type="email" required autoComplete="email" placeholder={r.emailPlaceholder} />
         </Field>
-        <Field label="Password" hint="At least 10 characters.">
+        <Field label={r.password} hint={r.passwordHint}>
           <Input
             name="password"
             type="password"
             required
             minLength={10}
             autoComplete="new-password"
-            placeholder="Create a password"
+            placeholder={r.passwordPlaceholder}
           />
         </Field>
 
@@ -80,14 +83,14 @@ export default function RegisterPage() {
         )}
 
         <Button type="submit" size="lg" full loading={pending}>
-          {pending ? "Creating your account" : "Create account"}
+          {pending ? r.submitting : r.submit}
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already registered?{" "}
+        {r.already}{" "}
         <Link href="/login" className="font-semibold text-brand underline-offset-4 hover:underline">
-          Sign in
+          {r.signInLink}
         </Link>
       </p>
     </div>

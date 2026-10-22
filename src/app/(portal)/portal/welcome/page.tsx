@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { getDictionary } from "@/lib/i18n/server";
 import { toFormValues } from "@/modules/profiles/form-values";
 import { ensureProfile, getProfile, listSkills } from "@/modules/profiles/service";
 import { hasPermission } from "@/modules/roles/permissions";
@@ -9,6 +10,7 @@ import { hasPermission } from "@/modules/roles/permissions";
 export const metadata = { title: "Welcome" };
 
 export default async function WelcomePage() {
+  const { t } = await getDictionary();
   const session = await auth();
   const user = session!.user;
   const tenantId = user.activeTenantId;
@@ -26,14 +28,10 @@ export default async function WelcomePage() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2 px-1">
-        <h1 className="font-display text-2xl font-semibold tracking-[0.1em] uppercase">
-          Welcome to Foliora
-        </h1>
-        <p className="text-muted-foreground">
-          Tell us about yourself. It takes about two minutes and you can change everything later.
-        </p>
+        <h1 className="font-display text-2xl font-semibold tracking-[0.1em] uppercase">{t.welcome.title}</h1>
+        <p className="text-muted-foreground">{t.welcome.text}</p>
         <Link href="/portal" className="w-fit text-sm font-semibold text-brand underline-offset-4 hover:underline">
-          Skip for now
+          {t.common.skip}
         </Link>
       </div>
       <ProfileForm
