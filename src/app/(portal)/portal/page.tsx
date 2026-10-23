@@ -10,6 +10,8 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { TodoKey } from "@/modules/profiles/completeness";
 import { ensureProfile, getProfile, scoreProfile } from "@/modules/profiles/service";
 import { getTenantPermissions } from "@/modules/roles/permissions";
+import { countShowreels } from "@/modules/showreel/service";
+import { countWorks } from "@/modules/works/service";
 
 const STATUS_TONE: Record<string, BadgeTone> = {
   PENDING: "warning",
@@ -18,15 +20,17 @@ const STATUS_TONE: Record<string, BadgeTone> = {
   CLOSED: "neutral",
 };
 
-const TILES: { key: "photos" | "works" | "inquiries" | "views"; icon: IconName }[] = [
+type TileKey = "photos" | "works" | "showreel" | "inquiries";
+
+const TILES: { key: TileKey; icon: IconName; href?: string }[] = [
   { key: "photos", icon: "image" },
-  { key: "works", icon: "film" },
+  { key: "works", icon: "film", href: "/portal/portfolio" },
+  { key: "showreel", icon: "eye", href: "/portal/portfolio/showreel" },
   { key: "inquiries", icon: "mail" },
-  { key: "views", icon: "eye" },
 ];
 
-const NEXT_STEPS: { key: "media" | "casting" | "inbox"; icon: IconName }[] = [
-  { key: "media", icon: "image" },
+const NEXT_STEPS: { key: "photos" | "casting" | "inbox"; icon: IconName }[] = [
+  { key: "photos", icon: "image" },
   { key: "casting", icon: "film" },
   { key: "inbox", icon: "mail" },
 ];
@@ -46,10 +50,17 @@ export default async function PortalPage() {
     : null;
 
   let completeness: { percent: number; missing: TodoKey[] } | null = null;
+  const counts: Partial<Record<TileKey, number>> = {};
   if (user.activeTenantId && tenant?.type === "INDIVIDUAL") {
     await ensureProfile(user.activeTenantId);
-    const profile = await getProfile(user.activeTenantId);
+    const [profile, works, showreels] = await Promise.all([
+      getProfile(user.activeTenantId),
+      countWorks(user.activeTenantId),
+      countShowreels(user.activeTenantId),
+    ]);
     if (profile) completeness = scoreProfile(profile);
+    counts.works = works;
+    counts.showreel = showreels;
   }
 
   const permissions = user.activeTenantId
@@ -88,16 +99,30 @@ export default async function PortalPage() {
         )}
 
         <ul className="mt-5 grid grid-cols-2 gap-3">
-          {TILES.map((tile) => (
-            <li key={tile.key} className="rounded-2xl bg-white/5 p-4">
-              <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <Icon name={tile.icon} size={16} className="text-brand" />
-                {p.tiles[tile.key]}
-              </span>
-              <span className="mt-2 block font-display text-2xl font-semibold">—</span>
-              <span className="text-xs text-white/40">{p.availableSoon}</span>
-            </li>
-          ))}
+          {TILES.map((tile) => {
+            const count = counts[tile.key];
+            const body = (
+              <>
+                <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <Icon name={tile.icon} size={16} className="text-brand" />
+                  {p.tiles[tile.key]}
+                </span>
+                <span className="mt-2 block font-display text-2xl font-semibold">{count ?? "—"}</span>
+                {count === undefined && <span className="text-xs text-white/40">{p.availableSoon}</span>}
+              </>
+            );
+            return (
+              <li key={tile.key}>
+                {tile.href && count !== undefined ? (
+                  <Link href={tile.href} className="block rounded-2xl bg-white/5 p-4 transition hover:bg-white/8">
+                    {body}
+                  </Link>
+                ) : (
+                  <div className="rounded-2xl bg-white/5 p-4">{body}</div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </Card>
 

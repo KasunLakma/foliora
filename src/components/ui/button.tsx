@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "light" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "light" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANTS: Record<ButtonVariant, string> = {
@@ -9,6 +9,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   secondary: "glass-card text-foreground hover:bg-white/10",
   light: "bg-white text-black hover:bg-white/90",
   ghost: "text-foreground hover:bg-white/8",
+  danger: "text-danger hover:bg-danger/10",
 };
 
 const SIZES: Record<ButtonSize, string> = {

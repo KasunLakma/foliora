@@ -201,6 +201,7 @@ model AuditLog {
   @@index([action])
   @@map("audit_logs")
 }
+
 // ---------- Talent profile (Phase 2) ----------
 
 enum Gender {
@@ -248,6 +249,8 @@ model TalentProfile {
   tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   skills      ProfileSkill[]
   socialLinks SocialLink[]
+  works       Work[]
+  showreels   Showreel[]
 
   @@index([tenantId])
   @@map("talent_profiles")
@@ -270,12 +273,12 @@ model SocialLink {
 
 // Shared skill catalogue (same for every tenant).
 model Skill {
-  id        String  @id @default(cuid())
-  key       String  @unique
+  id        String @id @default(cuid())
+  key       String @unique
   category  String
   nameEn    String
   nameSi    String
-  sortOrder Int     @default(0)
+  sortOrder Int    @default(0)
 
   profiles ProfileSkill[]
 
@@ -293,4 +296,74 @@ model ProfileSkill {
   @@id([profileId, skillId])
   @@index([tenantId])
   @@map("profile_skills")
+}
+
+// ---------- Works and showreel (Phase 3a) ----------
+
+enum WorkType {
+  FILM
+  TV
+  THEATRE
+  COMMERCIAL
+  MUSIC_VIDEO
+  WEB_SERIES
+  MODELLING
+  OTHER
+}
+
+enum WorkRoleType {
+  LEAD
+  SUPPORTING
+  CAMEO
+  EXTRA
+  OTHER
+}
+
+enum VideoProvider {
+  YOUTUBE
+  VIMEO
+}
+
+// A credit in the talent's filmography.
+model Work {
+  id          String        @id @default(cuid())
+  tenantId    String
+  profileId   String
+  title       String
+  year        Int
+  type        WorkType
+  roleName    String?
+  roleType    WorkRoleType?
+  director    String?
+  company     String?
+  description String?
+  link        String?
+  isFeatured  Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  profile TalentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([profileId, year])
+  @@map("works")
+}
+
+// A showreel is a link to a video on YouTube or Vimeo (no video files are stored by Foliora).
+model Showreel {
+  id        String        @id @default(cuid())
+  tenantId  String
+  profileId String
+  title     String
+  url       String
+  provider  VideoProvider
+  videoId   String
+  isPrimary Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  profile TalentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([profileId])
+  @@map("showreels")
 }

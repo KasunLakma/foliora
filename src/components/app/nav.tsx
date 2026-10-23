@@ -8,13 +8,13 @@ import { cn } from "@/lib/cn";
 import { format } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/provider";
 
-type NavKey = "home" | "profile" | "media" | "casting" | "inbox";
+type NavKey = "home" | "profile" | "portfolio" | "casting" | "inbox";
 type NavItem = { href: string; key: NavKey; icon: IconName; soon?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/portal", key: "home", icon: "home" },
   { href: "/portal/profile", key: "profile", icon: "user" },
-  { href: "/portal/media", key: "media", icon: "image", soon: true },
+  { href: "/portal/portfolio", key: "portfolio", icon: "image" },
   { href: "/portal/casting", key: "casting", icon: "film", soon: true },
   { href: "/portal/inbox", key: "inbox", icon: "mail", soon: true },
 ];
