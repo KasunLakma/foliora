@@ -10,6 +10,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { TodoKey } from "@/modules/profiles/completeness";
 import { ensureProfile, getProfile, scoreProfile } from "@/modules/profiles/service";
 import { getTenantPermissions } from "@/modules/roles/permissions";
+import { countPhotos } from "@/modules/photos/service";
 import { countShowreels } from "@/modules/showreel/service";
 import { countWorks } from "@/modules/works/service";
 
@@ -23,14 +24,13 @@ const STATUS_TONE: Record<string, BadgeTone> = {
 type TileKey = "photos" | "works" | "showreel" | "inquiries";
 
 const TILES: { key: TileKey; icon: IconName; href?: string }[] = [
-  { key: "photos", icon: "image" },
+  { key: "photos", icon: "image", href: "/portal/portfolio/photos" },
   { key: "works", icon: "film", href: "/portal/portfolio" },
   { key: "showreel", icon: "eye", href: "/portal/portfolio/showreel" },
   { key: "inquiries", icon: "mail" },
 ];
 
-const NEXT_STEPS: { key: "photos" | "casting" | "inbox"; icon: IconName }[] = [
-  { key: "photos", icon: "image" },
+const NEXT_STEPS: { key: "casting" | "inbox"; icon: IconName }[] = [
   { key: "casting", icon: "film" },
   { key: "inbox", icon: "mail" },
 ];
@@ -53,13 +53,15 @@ export default async function PortalPage() {
   const counts: Partial<Record<TileKey, number>> = {};
   if (user.activeTenantId && tenant?.type === "INDIVIDUAL") {
     await ensureProfile(user.activeTenantId);
-    const [profile, works, showreels] = await Promise.all([
+    const [profile, works, showreels, photos] = await Promise.all([
       getProfile(user.activeTenantId),
       countWorks(user.activeTenantId),
       countShowreels(user.activeTenantId),
+      countPhotos(user.activeTenantId),
     ]);
     if (profile) completeness = scoreProfile(profile);
     counts.works = works;
+    counts.photos = photos;
     counts.showreel = showreels;
   }
 

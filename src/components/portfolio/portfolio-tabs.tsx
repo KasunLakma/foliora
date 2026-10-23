@@ -11,6 +11,11 @@ export function PortfolioTabs() {
   const tabs = [
     { href: "/portal/portfolio", label: t.portfolio.tabs.works, active: pathname === "/portal/portfolio" },
     {
+      href: "/portal/portfolio/photos",
+      label: t.portfolio.tabs.photos,
+      active: pathname.startsWith("/portal/portfolio/photos"),
+    },
+    {
       href: "/portal/portfolio/showreel",
       label: t.portfolio.tabs.showreel,
       active: pathname.startsWith("/portal/portfolio/showreel"),
@@ -32,12 +37,6 @@ export function PortfolioTabs() {
           {tab.label}
         </Link>
       ))}
-      <span
-        aria-disabled="true"
-        className="flex h-10 flex-1 items-center justify-center rounded-full text-sm font-semibold text-white/30"
-      >
-        {t.portfolio.tabs.photos}
-      </span>
     </nav>
   );
 }

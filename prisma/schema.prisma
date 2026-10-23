@@ -251,6 +251,7 @@ model TalentProfile {
   socialLinks SocialLink[]
   works       Work[]
   showreels   Showreel[]
+  photos      Photo[]
 
   @@index([tenantId])
   @@map("talent_profiles")
@@ -366,4 +367,28 @@ model Showreel {
   @@index([tenantId])
   @@index([profileId])
   @@map("showreels")
+}
+
+// ---------- Photos (Phase 3b) ----------
+
+// The picture itself lives on Cloudinary. Foliora stores only its address (publicId) and details.
+model Photo {
+  id        String   @id @default(cuid())
+  tenantId  String
+  profileId String
+  publicId  String   @unique // Cloudinary id, always starts with foliora/<tenantId>/photos/
+  width     Int
+  height    Int
+  bytes     Int
+  format    String
+  caption   String?
+  isCover   Boolean  @default(false) // the main photo
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  profile TalentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([profileId, sortOrder])
+  @@map("photos")
 }
