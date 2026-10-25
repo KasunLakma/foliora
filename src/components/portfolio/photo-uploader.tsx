@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { format } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/provider";
-import { MAX_PHOTO_BYTES } from "@/modules/photos/paths";
+import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "@/modules/photos/paths";
 import { getUploadSignatureAction, registerPhotoAction } from "@/modules/photos/actions";
 
 export function PhotoUploader({ remaining }: { remaining: number }) {
@@ -39,10 +39,20 @@ export function PhotoUploader({ remaining }: { remaining: number }) {
         method: "POST",
         body,
       });
-      if (!response.ok) return format(t.photos.failed, { name: file.name });
+      if (!response.ok) {
+        // Cloudinary explains why in its answer. Show that reason.
+        let reason = `HTTP ${response.status}`;
+        try {
+          const answer = await response.json();
+          if (answer?.error?.message) reason = answer.error.message;
+        } catch {
+          /* keep the HTTP status */
+        }
+        return `${format(t.photos.failed, { name: file.name })} (${reason})`;
+      }
       uploaded = await response.json();
     } catch {
-      return format(t.photos.failed, { name: file.name });
+      return `${format(t.photos.failed, { name: file.name })} (network)`;
     }
 
     // 3. tell our server the picture is there, so it can be saved
@@ -60,7 +70,7 @@ export function PhotoUploader({ remaining }: { remaining: number }) {
     const files = Array.from(event.target.files ?? []).slice(0, Math.max(remaining, 0));
     event.target.value = ""; // allow choosing the same file again
     if (files.length === 0) {
-      setErrors([format(t.photos.limit, { max: "" }).trim()]);
+      setErrors([format(t.photos.limit, { max: MAX_PHOTOS })]);
       return;
     }
 
