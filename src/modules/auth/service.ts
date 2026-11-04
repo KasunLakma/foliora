@@ -17,42 +17,46 @@ export async function registerUser(input: RegisterInput, meta: RequestMeta = {})
   const status = process.env.REGISTRATION_APPROVAL_MODE === "auto" ? "ACTIVE" : "PENDING";
 
   try {
-    return await prisma.$transaction(async (tx) => {
-      const ownerRole = await tx.role.findFirst({
-        where: { tenantId: null, key: "owner" },
-      });
-      if (!ownerRole) {
-        throw new Error("System roles are missing. Run: npx tsx prisma/seed.ts");
-      }
-
-      const user = await tx.user.create({
-        data: { email: input.email, name: input.name, passwordHash },
-      });
-      const tenant = await tx.tenant.create({
-        data: { type: input.accountType, name: input.tenantName, status },
-      });
-      await tx.tenantMember.create({
-        data: { tenantId: tenant.id, userId: user.id, roleId: ownerRole.id },
-      });
-      if (input.accountType === "INDIVIDUAL") {
-        await tx.talentProfile.create({
-          data: { tenantId: tenant.id, stageName: input.tenantName },
+    return await prisma.$transaction(
+      async (tx) => {
+        const ownerRole = await tx.role.findFirst({
+          where: { tenantId: null, key: "owner" },
         });
-      }
-      await tx.auditLog.create({
-        data: {
-          tenantId: tenant.id,
-          actorUserId: user.id,
-          action: "tenant.register",
-          targetType: "Tenant",
-          targetId: tenant.id,
-          ip: meta.ip,
-          userAgent: meta.userAgent,
-        },
-      });
+        if (!ownerRole) {
+          throw new Error("System roles are missing. Run: npx tsx prisma/seed.ts");
+        }
 
-      return { userId: user.id, tenantId: tenant.id };
-    });
+        const user = await tx.user.create({
+          data: { email: input.email, name: input.name, passwordHash },
+        });
+        const tenant = await tx.tenant.create({
+          data: { type: input.accountType, name: input.tenantName, status },
+        });
+        await tx.tenantMember.create({
+          data: { tenantId: tenant.id, userId: user.id, roleId: ownerRole.id },
+        });
+        if (input.accountType === "INDIVIDUAL") {
+          await tx.talentProfile.create({
+            data: { tenantId: tenant.id, stageName: input.tenantName },
+          });
+        }
+        await tx.auditLog.create({
+          data: {
+            tenantId: tenant.id,
+            actorUserId: user.id,
+            action: "tenant.register",
+            targetType: "Tenant",
+            targetId: tenant.id,
+            ip: meta.ip,
+            userAgent: meta.userAgent,
+          },
+        });
+
+        return { userId: user.id, tenantId: tenant.id };
+      },
+      // A sleeping or busy database needs more than Prisma's default 2 seconds to answer.
+      { maxWait: 20_000, timeout: 30_000 },
+    );
   } catch (error) {
     if ((error as { code?: string }).code === "P2002") throw new EmailTakenError();
     throw error;
