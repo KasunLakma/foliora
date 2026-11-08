@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PortalShell } from "@/components/app/portal-shell";
 import { prisma } from "@/lib/db/prisma";
+import { countNewInquiries } from "@/modules/inquiries/service";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -13,11 +14,14 @@ export default async function PortalLayout({ children }: { children: React.React
         select: { name: true },
       })
     : null;
+  const unread = session.user.activeTenantId ? await countNewInquiries(session.user.activeTenantId) : 0;
 
   return (
     <PortalShell
       userName={session.user.name ?? session.user.email ?? "You"}
       tenantName={tenant?.name ?? null}
+      inboxUnread={unread}
+      isPlatformUser={Boolean(session.user.platformRole)}
     >
       {children}
     </PortalShell>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BottomNav, SideNav } from "@/components/app/nav";
 import { LanguageSwitch } from "@/components/app/language-switch";
 import { Icon } from "@/components/ui/icons";
@@ -8,10 +9,14 @@ import { signOutAction } from "@/modules/auth/actions";
 export async function PortalShell({
   userName,
   tenantName,
+  inboxUnread = 0,
+  isPlatformUser = false,
   children,
 }: {
   userName: string;
   tenantName: string | null;
+  inboxUnread?: number;
+  isPlatformUser?: boolean;
   children: React.ReactNode;
 }) {
   const { t } = await getDictionary();
@@ -19,7 +24,7 @@ export async function PortalShell({
 
   return (
     <div className="bg-stage min-h-dvh">
-      <SideNav />
+      <SideNav inboxUnread={inboxUnread} />
       <div className="md:pl-64">
         <header className="sticky top-0 z-30 pt-[env(safe-area-inset-top)]">
           <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4">
@@ -30,6 +35,14 @@ export async function PortalShell({
               {tenantName ?? "Foliora"}
             </p>
             <div className="flex items-center gap-1.5">
+              {isPlatformUser && (
+                <Link
+                  href="/admin"
+                  className="glass-card inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold text-white/85 transition hover:text-white"
+                >
+                  Admin
+                </Link>
+              )}
               <LanguageSwitch />
               <span
                 title={userName}
@@ -51,7 +64,7 @@ export async function PortalShell({
         </header>
         <main className="mx-auto max-w-3xl px-4 pt-2 pb-32 md:pb-12">{children}</main>
       </div>
-      <BottomNav />
+      <BottomNav inboxUnread={inboxUnread} />
     </div>
   );
 }

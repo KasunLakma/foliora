@@ -449,6 +449,15 @@ export const en = {
     message: "Message",
     open: "Open it in your inbox: {url}",
     replyHint: "You can reply to this email to answer {name} directly.",
+    approvedSubject: "Your Foliora account is approved",
+    approvedText: "Good news: your Foliora account is approved. You can now publish your page. Sign in here: {url}",
+    suspendedSubject: "Your Foliora account has been suspended",
+    suspendedText:
+      "Your Foliora account has been suspended and your page is no longer public. If you think this is a mistake, reply to this email.",
+    rejectedSubject: "We could not approve your Foliora account",
+    rejectedText:
+      "We were not able to approve your Foliora account. If you think this is a mistake, reply to this email.",
+    reasonLine: "Reason: {reason}",
   },
   home: {
     meta: {
@@ -1051,6 +1060,15 @@ export const si: Dictionary = {
     message: "පණිවිඩය",
     open: "ඔබේ පණිවිඩ කොටුවේ විවෘත කරන්න: {url}",
     replyHint: "මෙම email එකට පිළිතුරු දීමෙන් {name} වෙත කෙලින්ම පිළිතුරු දිය හැක.",
+    approvedSubject: "ඔබේ Foliora ගිණුම අනුමත වුණා",
+    approvedText: "සුභ ආරංචියක්: ඔබේ Foliora ගිණුම අනුමත වී ඇත. දැන් ඔබට ඔබේ පිටුව පළ කළ හැක. මෙතැනින් පිවිසෙන්න: {url}",
+    suspendedSubject: "ඔබේ Foliora ගිණුම අත්හිටුවා ඇත",
+    suspendedText:
+      "ඔබේ Foliora ගිණුම අත්හිටුවා ඇති අතර ඔබේ පිටුව තවදුරටත් ප්‍රසිද්ධ නොවේ. මෙය වැරදීමක් යැයි ඔබ සිතන්නේ නම් මෙම email එකට පිළිතුරු දෙන්න.",
+    rejectedSubject: "ඔබේ Foliora ගිණුම අනුමත කළ නොහැකි විය",
+    rejectedText:
+      "අපට ඔබේ Foliora ගිණුම අනුමත කළ නොහැකි විය. මෙය වැරදීමක් යැයි ඔබ සිතන්නේ නම් මෙම email එකට පිළිතුරු දෙන්න.",
+    reasonLine: "හේතුව: {reason}",
   },
   home: {
     meta: {

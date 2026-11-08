@@ -12,4 +12,4 @@ export default defineConfig({
     // Retry once: a sleeping database can drop the very first connection.
     retry: 1,
   },
-});
+}); 

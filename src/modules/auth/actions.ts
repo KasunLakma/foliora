@@ -3,11 +3,21 @@
 import { AuthError } from "next-auth";
 import { headers } from "next/headers";
 import { signIn, signOut } from "@/auth";
+import { prisma } from "@/lib/db/prisma";
 import { getDictionary } from "@/lib/i18n/server";
 import { createRegisterSchema, loginSchema } from "@/modules/auth/schema";
 import { EmailTakenError, registerUser } from "@/modules/auth/service";
 
 export type FormState = { error?: string } | undefined;
+
+/** Platform staff who have no talent account of their own start in the admin area. */
+async function landingFor(email: string) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { platformRole: true, memberships: { select: { id: true }, take: 1 } },
+  });
+  return user?.platformRole && user.memberships.length === 0 ? "/admin" : "/portal";
+}
 
 export async function loginAction(
   _prev: FormState,
@@ -24,7 +34,7 @@ export async function loginAction(
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: "/portal",
+      redirectTo: await landingFor(parsed.data.email),
     });
   } catch (error) {
     if (error instanceof AuthError) return { error: t.auth.errors.invalidLogin };
