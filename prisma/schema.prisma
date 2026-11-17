@@ -252,6 +252,8 @@ model TalentProfile {
   works       Work[]
   showreels   Showreel[]
   photos      Photo[]
+  portfolio   Portfolio?
+  inquiries   Inquiry[]
 
   @@index([tenantId])
   @@map("talent_profiles")
@@ -391,4 +393,93 @@ model Photo {
   @@index([tenantId])
   @@index([profileId, sortOrder])
   @@map("photos")
+}
+
+// ---------- Public portfolio website (Phase 4) ----------
+
+enum PortfolioStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// The settings of a talent's public website. The content itself comes from the profile.
+model Portfolio {
+  id             String          @id @default(cuid())
+  tenantId       String
+  profileId      String          @unique
+  slug           String?         @unique // the address: /<slug>. Empty until the talent chooses one.
+  templateKey    String          @default("cinematic")
+  status         PortfolioStatus @default(DRAFT)
+  seoTitle       String?
+  seoDescription String?
+  publishedAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  profile TalentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("portfolios")
+}
+
+// ---------- Inquiries (Phase 5) ----------
+
+enum InquiryType {
+  CASTING
+  BRAND
+  EVENT
+  REPRESENTATION
+  GENERAL
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+  SPAM
+}
+
+// A message that a visitor sent from the public page.
+model Inquiry {
+  id          String        @id @default(cuid())
+  tenantId    String
+  profileId   String
+  type        InquiryType   @default(GENERAL)
+  status      InquiryStatus @default(NEW)
+  senderName  String
+  senderEmail String
+  senderPhone String?
+  company     String?
+  projectName String?
+  message     String
+  locale      String        @default("en")
+  ipHash      String? // a one-way hash of the sender's address, used only to stop floods
+  readAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  profile TalentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  notes   InquiryNote[]
+
+  @@index([tenantId, status, createdAt])
+  @@index([profileId])
+  @@index([ipHash, createdAt])
+  @@map("inquiries")
+}
+
+// Private notes that the talent and their team write about an inquiry.
+model InquiryNote {
+  id           String   @id @default(cuid())
+  tenantId     String
+  inquiryId    String
+  authorUserId String?
+  body         String
+  createdAt    DateTime @default(now())
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([inquiryId])
+  @@map("inquiry_notes")
 }

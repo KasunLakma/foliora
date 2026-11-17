@@ -20,6 +20,11 @@ export function PortfolioTabs() {
       label: t.portfolio.tabs.showreel,
       active: pathname.startsWith("/portal/portfolio/showreel"),
     },
+    {
+      href: "/portal/portfolio/publish",
+      label: t.portfolio.tabs.publish,
+      active: pathname.startsWith("/portal/portfolio/publish"),
+    },
   ];
 
   return (

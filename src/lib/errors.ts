@@ -32,3 +32,17 @@ export class LimitError extends Error {
     this.name = "LimitError";
   }
 }
+
+export class ConflictError extends Error {
+  constructor(message = "Already exists") {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
+export class NotApprovedError extends Error {
+  constructor(message = "Account is not approved yet") {
+    super(message);
+    this.name = "NotApprovedError";
+  }
+}

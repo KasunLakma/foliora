@@ -16,15 +16,28 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/portal/profile", key: "profile", icon: "user" },
   { href: "/portal/portfolio", key: "portfolio", icon: "image" },
   { href: "/portal/casting", key: "casting", icon: "film", soon: true },
-  { href: "/portal/inbox", key: "inbox", icon: "mail", soon: true },
+  { href: "/portal/inbox", key: "inbox", icon: "mail" },
 ];
+
+function NavIcon({ name, size, badge }: { name: IconName; size: number; badge: number }) {
+  return (
+    <span className="relative">
+      <Icon name={name} size={size} />
+      {badge > 0 && (
+        <span className="bg-brand-gradient absolute -top-1.5 -right-2 grid min-w-4 place-items-center rounded-full px-1 text-[10px] leading-4 font-bold text-on-brand">
+          {badge > 9 ? "9+" : badge}
+        </span>
+      )}
+    </span>
+  );
+}
 
 function isActive(pathname: string, href: string) {
   return href === "/portal" ? pathname === "/portal" : pathname.startsWith(href);
 }
 
 /** Phone: a floating pill tab bar. The active tab expands to show its name. */
-export function BottomNav() {
+export function BottomNav({ inboxUnread = 0 }: { inboxUnread?: number }) {
   const pathname = usePathname();
   const { t } = useI18n();
 
@@ -40,7 +53,7 @@ export function BottomNav() {
           const base = "flex h-12 items-center justify-center gap-2 rounded-full px-3.5 transition";
           const content = (
             <>
-              <Icon name={item.icon} size={22} />
+              <NavIcon name={item.icon} size={22} badge={item.key === "inbox" ? inboxUnread : 0} />
               {active && <span className="text-sm font-semibold">{label}</span>}
             </>
           );
@@ -77,7 +90,7 @@ export function BottomNav() {
 }
 
 /** Tablet and desktop: a glass side rail. */
-export function SideNav() {
+export function SideNav({ inboxUnread = 0 }: { inboxUnread?: number }) {
   const pathname = usePathname();
   const { t } = useI18n();
 
@@ -107,7 +120,7 @@ export function SideNav() {
                     aria-current={active ? "page" : undefined}
                     className={cn(row, "hover:bg-white/6")}
                   >
-                    <Icon name={item.icon} size={20} />
+                    <NavIcon name={item.icon} size={20} badge={item.key === "inbox" ? inboxUnread : 0} />
                     {label}
                   </Link>
                 )}

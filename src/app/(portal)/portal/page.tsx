@@ -10,7 +10,9 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { TodoKey } from "@/modules/profiles/completeness";
 import { ensureProfile, getProfile, scoreProfile } from "@/modules/profiles/service";
 import { getTenantPermissions } from "@/modules/roles/permissions";
+import { countInbox } from "@/modules/inquiries/service";
 import { countPhotos } from "@/modules/photos/service";
+import { ensurePortfolio } from "@/modules/portfolio/service";
 import { countShowreels } from "@/modules/showreel/service";
 import { countWorks } from "@/modules/works/service";
 
@@ -27,13 +29,10 @@ const TILES: { key: TileKey; icon: IconName; href?: string }[] = [
   { key: "photos", icon: "image", href: "/portal/portfolio/photos" },
   { key: "works", icon: "film", href: "/portal/portfolio" },
   { key: "showreel", icon: "eye", href: "/portal/portfolio/showreel" },
-  { key: "inquiries", icon: "mail" },
+  { key: "inquiries", icon: "mail", href: "/portal/inbox" },
 ];
 
-const NEXT_STEPS: { key: "casting" | "inbox"; icon: IconName }[] = [
-  { key: "casting", icon: "film" },
-  { key: "inbox", icon: "mail" },
-];
+const NEXT_STEPS: { key: "casting"; icon: IconName }[] = [{ key: "casting", icon: "film" }];
 
 export default async function PortalPage() {
   const { t } = await getDictionary();
@@ -50,18 +49,23 @@ export default async function PortalPage() {
     : null;
 
   let completeness: { percent: number; missing: TodoKey[] } | null = null;
+  let site: { slug: string | null; status: string } | null = null;
   const counts: Partial<Record<TileKey, number>> = {};
   if (user.activeTenantId && tenant?.type === "INDIVIDUAL") {
     await ensureProfile(user.activeTenantId);
-    const [profile, works, showreels, photos] = await Promise.all([
+    const [profile, works, showreels, photos, inquiries] = await Promise.all([
       getProfile(user.activeTenantId),
       countWorks(user.activeTenantId),
       countShowreels(user.activeTenantId),
       countPhotos(user.activeTenantId),
+      countInbox(user.activeTenantId),
     ]);
     if (profile) completeness = scoreProfile(profile);
     counts.works = works;
     counts.photos = photos;
+    counts.inquiries = inquiries;
+    const portfolio = await ensurePortfolio(user.activeTenantId);
+    if (portfolio) site = { slug: portfolio.slug, status: portfolio.status };
     counts.showreel = showreels;
   }
 
@@ -70,6 +74,7 @@ export default async function PortalPage() {
     : [];
 
   const statusKey = (tenant?.status ?? "CLOSED") as keyof typeof p.status;
+  const siteHost = new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").host;
 
   return (
     <div className="flex flex-col gap-4">
@@ -159,6 +164,26 @@ export default async function PortalPage() {
           )}
           <Link href="/portal/profile" className={buttonStyles({ size: "md" }) + " mt-4"}>
             {completeness.percent === 100 ? p.viewProfile : p.continue}
+          </Link>
+        </Card>
+      )}
+
+      {site && (
+        <Card>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-semibold tracking-[0.1em] uppercase">{p.siteTitle}</h2>
+            <Badge tone={site.status === "PUBLISHED" ? "success" : "neutral"}>
+              {site.status === "PUBLISHED" ? t.publish.statusPublished : t.publish.statusDraft}
+            </Badge>
+          </div>
+          <p className="mt-2 truncate text-sm text-muted-foreground">
+            {site.slug ? `${siteHost}/${site.slug}` : p.siteNoAddress}
+          </p>
+          <Link
+            href="/portal/portfolio/publish"
+            className={buttonStyles({ size: "md", variant: "secondary" }) + " mt-4"}
+          >
+            {p.siteManage}
           </Link>
         </Card>
       )}
