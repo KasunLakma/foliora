@@ -532,6 +532,7 @@ model Subscription {
   startsAt         DateTime
   endsAt           DateTime
   paymentRequestId String?            @unique
+  reminderSentAt   DateTime? // set when the "your plan ends soon" email has been sent
   createdAt        DateTime           @default(now())
 
   plan Plan @relation(fields: [planId], references: [id], onDelete: Restrict)

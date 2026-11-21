@@ -44,3 +44,29 @@ export async function notifyPaymentDecision(tenantId: string, decision: Decision
 
   for (const owner of owners) await sendEmail({ to: owner.user.email, subject, text });
 }
+
+/** "Your plan ends soon." Returns true when at least one email was really sent. */
+export async function notifyRenewalReminder(tenantId: string, planName: string, endsAt: Date): Promise<boolean> {
+  const [tenant, owners] = await Promise.all([
+    prisma.tenant.findUnique({ where: { id: tenantId }, select: { defaultLocale: true } }),
+    prisma.tenantMember.findMany({
+      where: { tenantId, status: "ACTIVE", role: { key: "owner" }, user: { status: "ACTIVE" } },
+      select: { user: { select: { email: true } } },
+    }),
+  ]);
+  const locale = isLocale(tenant?.defaultLocale) ? tenant.defaultLocale : DEFAULT_LOCALE;
+  const m = dictionaries[locale].emails;
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  const date = new Intl.DateTimeFormat(locale === "si" ? "si-LK" : "en-GB", { dateStyle: "medium" }).format(endsAt);
+
+  let delivered = false;
+  for (const owner of owners) {
+    const sent = await sendEmail({
+      to: owner.user.email,
+      subject: format(m.renewalSubject, { plan: planName, date }),
+      text: format(m.renewalText, { plan: planName, date, url: base ? `${base}/portal/billing` : "Foliora" }),
+    });
+    delivered = delivered || sent;
+  }
+  return delivered;
+}

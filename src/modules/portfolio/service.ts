@@ -2,6 +2,8 @@ import { prisma } from "../../lib/db/prisma";
 import { tenantDb } from "../../lib/db/tenant";
 import { ConflictError, NotApprovedError, NotFoundError, ValidationError } from "../../lib/errors";
 import { writeAudit } from "../audit/service";
+import { getCurrentPlan } from "../billing/service";
+import { visiblePhotos } from "../billing/rules";
 import type { PublicPortfolio } from "./public-types";
 import { validateSlug } from "./slug";
 import { TEMPLATE_KEYS } from "./templates";
@@ -124,17 +126,19 @@ export async function getPublicPortfolio(
   if (!live && !ownerPreview) return null;
 
   const db = tenantDb(portfolio.tenantId);
-  const [photos, works, showreels, profileSkills, socialLinks] = await Promise.all([
+  const [photos, works, showreels, profileSkills, socialLinks, plan] = await Promise.all([
     db.photo.findMany({ orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     db.work.findMany({ orderBy: [{ isFeatured: "desc" }, { year: "desc" }, { createdAt: "desc" }] }),
     db.showreel.findMany({ orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] }),
     db.profileSkill.findMany({ include: { skill: true }, orderBy: { skill: { sortOrder: "asc" } } }),
     db.socialLink.findMany({ orderBy: { sortOrder: "asc" } }),
+    getCurrentPlan(portfolio.tenantId),
   ]);
 
   const p = portfolio.profile;
   return {
     live,
+    showBadge: plan.isFree,
     slug: portfolio.slug,
     templateKey: portfolio.templateKey,
     stageName: p.stageName,
@@ -151,7 +155,11 @@ export async function getPublicPortfolio(
     languages: p.languages,
     skills: profileSkills.map((ps) => ({ nameEn: ps.skill.nameEn, nameSi: ps.skill.nameSi })),
     socialLinks: socialLinks.map((l) => ({ platform: l.platform, url: l.url })),
-    photos: photos.map((x) => ({ publicId: x.publicId, caption: x.caption, isCover: x.isCover })),
+    photos: visiblePhotos(photos, plan.limits.photos).map((x) => ({
+      publicId: x.publicId,
+      caption: x.caption,
+      isCover: x.isCover,
+    })),
     works: works.map((w) => ({
       title: w.title,
       year: w.year,

@@ -4,8 +4,9 @@ import { PhotoUploader } from "@/components/portfolio/photo-uploader";
 import { PortfolioTabs } from "@/components/portfolio/portfolio-tabs";
 import { Card } from "@/components/ui/card";
 import { cloudinaryConfig, imageUrl } from "@/lib/cloudinary";
+import { format } from "@/lib/i18n/format";
 import { getDictionary } from "@/lib/i18n/server";
-import { MAX_PHOTOS } from "@/modules/photos/paths";
+import { getCurrentPlan } from "@/modules/billing/service";
 import { listPhotos } from "@/modules/photos/service";
 import { ensureProfile } from "@/modules/profiles/service";
 import { hasPermission } from "@/modules/roles/permissions";
@@ -36,10 +37,12 @@ export default async function PhotosPage() {
     );
   }
 
-  const [photos, canEdit] = await Promise.all([
+  const [photos, canEdit, plan] = await Promise.all([
     listPhotos(tenantId),
     hasPermission(user.id, tenantId, "media.upload"),
+    getCurrentPlan(tenantId),
   ]);
+  const limit = plan.limits.photos;
   const configured = cloudinaryConfig() !== null;
 
   const views: PhotoView[] = photos.map((photo) => ({
@@ -55,12 +58,18 @@ export default async function PhotosPage() {
       <PortfolioTabs />
       <p className="px-1 text-sm text-muted-foreground">{t.photos.intro}</p>
 
+      {photos.length > limit && (
+        <p className="rounded-2xl bg-warning/12 px-4 py-3 text-sm font-medium text-warning">
+          {format(t.photos.overLimit, { max: limit, count: photos.length })}
+        </p>
+      )}
+
       {!configured ? (
         <Card>
           <p className="text-warning">{t.photos.notConfigured}</p>
         </Card>
       ) : (
-        canEdit && <PhotoUploader remaining={MAX_PHOTOS - photos.length} />
+        canEdit && <PhotoUploader remaining={Math.max(limit - photos.length, 0)} limit={limit} />
       )}
 
       <PhotoGrid photos={views} canEdit={canEdit && configured} />

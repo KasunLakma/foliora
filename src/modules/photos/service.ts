@@ -1,7 +1,8 @@
 import { tenantDb } from "../../lib/db/tenant";
 import { LimitError, NotFoundError, ValidationError } from "../../lib/errors";
 import { writeAudit } from "../audit/service";
-import { ALLOWED_FORMATS, MAX_PHOTOS, MAX_PHOTO_BYTES, isOwnPublicId } from "./paths";
+import { getCurrentPlan } from "../billing/service";
+import { ALLOWED_FORMATS, MAX_PHOTO_BYTES, isOwnPublicId } from "./paths";
 
 const ORDER = [{ sortOrder: "asc" as const }, { createdAt: "asc" as const }];
 
@@ -38,7 +39,8 @@ export async function registerPhoto(tenantId: string, actorUserId: string, input
   if (!profile) throw new NotFoundError("Profile not found");
 
   const stats = await db.photo.aggregate({ _count: true, _max: { sortOrder: true } });
-  if (stats._count >= MAX_PHOTOS) throw new LimitError("Too many photos");
+  const { limits } = await getCurrentPlan(tenantId);
+  if (stats._count >= limits.photos) throw new LimitError("Too many photos");
 
   try {
     const created = await db.photo.create({

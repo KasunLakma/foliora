@@ -6,10 +6,10 @@ import { Icon } from "@/components/ui/icons";
 import { cn } from "@/lib/cn";
 import { format } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/provider";
-import { MAX_PHOTOS, MAX_PHOTO_BYTES } from "@/modules/photos/paths";
+import { MAX_PHOTO_BYTES } from "@/modules/photos/paths";
 import { getUploadSignatureAction, registerPhotoAction } from "@/modules/photos/actions";
 
-export function PhotoUploader({ remaining }: { remaining: number }) {
+export function PhotoUploader({ remaining, limit }: { remaining: number; limit: number }) {
   const { t } = useI18n();
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export function PhotoUploader({ remaining }: { remaining: number }) {
     const files = Array.from(event.target.files ?? []).slice(0, Math.max(remaining, 0));
     event.target.value = ""; // allow choosing the same file again
     if (files.length === 0) {
-      setErrors([format(t.photos.limit, { max: MAX_PHOTOS })]);
+      setErrors([format(t.photos.limit, { max: limit })]);
       return;
     }
 
@@ -98,6 +98,7 @@ export function PhotoUploader({ remaining }: { remaining: number }) {
         className={cn(
           "glass-card flex cursor-pointer flex-col items-center gap-2 rounded-[1.75rem] border-dashed p-6 text-center transition",
           busy ? "opacity-60" : "hover:bg-white/8",
+          remaining <= 0 && "opacity-50",
         )}
       >
         <input
@@ -113,6 +114,9 @@ export function PhotoUploader({ remaining }: { remaining: number }) {
         </span>
         <span className="font-semibold">{t.photos.upload}</span>
         <span className="text-xs text-muted-foreground">{t.photos.hint}</span>
+        {remaining <= 0 && (
+          <span className="text-xs font-semibold text-warning">{format(t.photos.limit, { max: limit })}</span>
+        )}
       </label>
 
       <p aria-live="polite" className="px-1 text-sm font-medium text-success empty:hidden">

@@ -1,6 +1,7 @@
 /** Everything a visitor of a public page may receive. Private fields (legal name, birth year, ids) are NOT here. */
 export type PublicPortfolio = {
   live: boolean; // false = the owner is looking at their own draft
+  showBadge: boolean; // the "Made with Foliora" badge belongs to the Free plan
   slug: string;
   templateKey: string;
   stageName: string;

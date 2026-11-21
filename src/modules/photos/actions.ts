@@ -8,7 +8,8 @@ import { ForbiddenError, LimitError, NotFoundError, ValidationError } from "@/li
 import { format } from "@/lib/i18n/format";
 import { getDictionary } from "@/lib/i18n/server";
 import { requirePermission } from "@/modules/roles/permissions";
-import { ALLOWED_FORMATS, MAX_PHOTOS, MAX_PHOTO_BYTES, photoFolder } from "./paths";
+import { getCurrentPlan } from "@/modules/billing/service";
+import { ALLOWED_FORMATS, MAX_PHOTO_BYTES, photoFolder } from "./paths";
 import {
   countPhotos,
   deletePhoto,
@@ -49,8 +50,9 @@ export async function getUploadSignatureAction(): Promise<UploadSignature | { er
     throw error;
   }
 
-  if ((await countPhotos(ctx.tenantId)) >= MAX_PHOTOS) {
-    return { error: format(t.photos.limit, { max: MAX_PHOTOS }) };
+  const { limits } = await getCurrentPlan(ctx.tenantId);
+  if ((await countPhotos(ctx.tenantId)) >= limits.photos) {
+    return { error: format(t.photos.limit, { max: limits.photos }) };
   }
 
   const signature = createUploadSignature(photoFolder(ctx.tenantId), ALLOWED_FORMATS.join(","));
@@ -86,7 +88,10 @@ export async function registerPhotoAction(input: unknown): Promise<{ error?: str
     await registerPhoto(ctx.tenantId, ctx.userId, parsed.data);
   } catch (error) {
     if (error instanceof ValidationError) return { error: t.portfolioErrors.generic };
-    if (error instanceof LimitError) return { error: format(t.photos.limit, { max: MAX_PHOTOS }) };
+    if (error instanceof LimitError) {
+      const { limits } = await getCurrentPlan(ctx.tenantId);
+      return { error: format(t.photos.limit, { max: limits.photos }) };
+    }
     if (error instanceof NotFoundError) return { error: t.portfolioErrors.notFound };
     throw error;
   }

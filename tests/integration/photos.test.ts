@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "../../src/lib/db/prisma";
 import { LimitError, NotFoundError, ValidationError } from "../../src/lib/errors";
 import { registerUser } from "../../src/modules/auth/service";
-import { MAX_PHOTOS, photoFolder } from "../../src/modules/photos/paths";
+import { getCurrentPlan } from "../../src/modules/billing/service";
+import { photoFolder } from "../../src/modules/photos/paths";
 import {
   deletePhoto,
   listPhotos,
@@ -28,6 +29,14 @@ const photo = (tenantId: string, name: string, overrides = {}) => ({
 });
 
 beforeAll(async () => {
+  // The plans are shared data. Create them only if they are missing, and never overwrite real prices.
+  const plans = [
+    { key: "free", name: "Free", monthlyPrice: 0, yearlyPrice: 0, sortOrder: 0, limits: { photos: 15, showreels: 5 } },
+    { key: "pro", name: "Pro", monthlyPrice: 2500, yearlyPrice: 25000, sortOrder: 1, limits: { photos: 200, showreels: 5 } },
+    { key: "agency", name: "Agency", monthlyPrice: 12500, yearlyPrice: 125000, sortOrder: 2, limits: { photos: 2000, showreels: 5 } },
+  ];
+  for (const plan of plans) await prisma.plan.upsert({ where: { key: plan.key }, update: {}, create: plan });
+
   a = await registerUser({
     name: "Photos A",
     email: `photos-a-${stamp}@example.test`,
@@ -47,6 +56,7 @@ beforeAll(async () => {
 afterAll(async () => {
   const tenantIds = [a.tenantId, b.tenantId];
   await prisma.auditLog.deleteMany({ where: { tenantId: { in: tenantIds } } });
+  await prisma.subscription.deleteMany({ where: { tenantId: { in: tenantIds } } });
   await prisma.tenant.deleteMany({ where: { id: { in: tenantIds } } });
   await prisma.user.deleteMany({ where: { id: { in: [a.userId, b.userId] } } });
   await prisma.$disconnect();
@@ -119,13 +129,28 @@ describe("photos", () => {
     expect(list.filter((p) => p.isCover)).toHaveLength(1);
   });
 
-  it("stops at the photo limit", async () => {
+  it("stops at the limit of the plan, and a paid plan raises it at once", async () => {
+    const limit = (await getCurrentPlan(a.tenantId)).limits.photos;
     const current = (await listPhotos(a.tenantId)).length;
-    for (let i = current; i < MAX_PHOTOS; i += 1) {
+    for (let i = current; i < limit; i += 1) {
       await registerPhoto(a.tenantId, a.userId, photo(a.tenantId, `fill-${i}`));
     }
     await expect(
       registerPhoto(a.tenantId, a.userId, photo(a.tenantId, "one-too-many")),
     ).rejects.toBeInstanceOf(LimitError);
+
+    const pro = await prisma.plan.findUniqueOrThrow({ where: { key: "pro" } });
+    await prisma.subscription.create({
+      data: {
+        tenantId: a.tenantId,
+        planId: pro.id,
+        period: "MONTHLY",
+        startsAt: new Date(Date.now() - 60 * 60 * 1000),
+        endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+    await expect(
+      registerPhoto(a.tenantId, a.userId, photo(a.tenantId, "now-allowed")),
+    ).resolves.toBeTruthy();
   });
 });

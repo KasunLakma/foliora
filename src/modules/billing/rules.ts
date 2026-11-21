@@ -46,3 +46,18 @@ export function pickActive<T extends { endsAt: Date; plan: { sortOrder: number }
     (a, b) => b.plan.sortOrder - a.plan.sortOrder || b.endsAt.getTime() - a.endsAt.getTime(),
   )[0];
 }
+
+/**
+ * A plan allows a number of photos. If an account has more (for example after a paid plan ended),
+ * the first ones in its own order are shown, and the main photo is always kept. Nothing is deleted.
+ * The list must already be in the account's own order.
+ */
+export function visiblePhotos<T extends { isCover: boolean }>(photos: T[], limit: number): T[] {
+  if (limit <= 0) return [];
+  if (photos.length <= limit) return photos;
+
+  const shown = photos.slice(0, limit);
+  const cover = photos.find((photo) => photo.isCover);
+  if (cover && !shown.includes(cover)) shown[limit - 1] = cover;
+  return shown;
+}

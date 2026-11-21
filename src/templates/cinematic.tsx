@@ -300,11 +300,13 @@ export function CinematicTemplate({
         )}
       </main>
 
-      <footer className="border-t border-white/8 px-6 py-8 text-center text-sm text-white/40">
-        <a href="/" className="transition hover:text-white/70">
-          {s.poweredBy}
-        </a>
-      </footer>
+      {data.showBadge && (
+        <footer className="border-t border-white/8 px-6 py-8 text-center text-sm text-white/40">
+          <a href="/" className="transition hover:text-white/70">
+            {s.poweredBy}
+          </a>
+        </footer>
+      )}
     </div>
   );
 }

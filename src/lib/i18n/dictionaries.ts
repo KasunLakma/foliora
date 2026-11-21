@@ -323,6 +323,7 @@ export const en = {
     notConfigured: "Photo upload is not set up yet. Add the Cloudinary keys to the environment settings.",
     tooBig: "{name} is larger than 10 MB.",
     failed: "{name} could not be uploaded.",
+    overLimit: "Your plan allows {max} photos, but you have {count}. Only the first {max} show on your public page.",
   },
   publish: {
     statusDraft: "Draft",
@@ -462,6 +463,9 @@ export const en = {
     rejectedText:
       "We were not able to approve your Foliora account. If you think this is a mistake, reply to this email.",
     reasonLine: "Reason: {reason}",
+    renewalSubject: "Your {plan} plan ends on {date}",
+    renewalText:
+      "Your {plan} plan ends on {date}. After that your page goes back to the Free plan limits. To keep your plan, request a renewal here: {url}",
     paymentApprovedSubject: "Your {plan} plan is active",
     paymentApprovedText:
       "Thank you. Your payment is confirmed and your {plan} plan is active until {date}. Manage your plan here: {url}",
@@ -992,6 +996,7 @@ export const si: Dictionary = {
     notConfigured: "ඡායාරූප උඩුගත කිරීම තවම සකසා නැත. Cloudinary යතුරු පරිසර සැකසුම් වලට එක් කරන්න.",
     tooBig: "{name} MB 10 ට වඩා විශාලයි.",
     failed: "{name} උඩුගත කළ නොහැකි විය.",
+    overLimit: "ඔබේ සැලැස්මට ඡායාරූප {max}ක් දක්වා ඉඩ ඇත, ඒත් ඔබට {count}ක් ඇත. ඔබේ ප්‍රසිද්ධ පිටුවේ පෙන්වන්නේ පළමු {max} පමණයි.",
   },
   publish: {
     statusDraft: "කෙටුම්පත",
@@ -1131,6 +1136,9 @@ export const si: Dictionary = {
     rejectedText:
       "අපට ඔබේ Foliora ගිණුම අනුමත කළ නොහැකි විය. මෙය වැරදීමක් යැයි ඔබ සිතන්නේ නම් මෙම email එකට පිළිතුරු දෙන්න.",
     reasonLine: "හේතුව: {reason}",
+    renewalSubject: "ඔබේ {plan} සැලැස්ම {date} දින අවසන් වේ",
+    renewalText:
+      "ඔබේ {plan} සැලැස්ම {date} දින අවසන් වේ. ඉන්පසු ඔබේ පිටුව නොමිලේ සැලැස්මේ සීමාවලට ආපසු යයි. ඔබේ සැලැස්ම තබාගැනීමට මෙතැනින් අලුත් කිරීමක් ඉල්ලන්න: {url}",
     paymentApprovedSubject: "ඔබේ {plan} සැලැස්ම සක්‍රීයයි",
     paymentApprovedText:
       "ස්තූතියි. ඔබේ ගෙවීම තහවුරු වී ඇති අතර ඔබේ {plan} සැලැස්ම {date} දක්වා සක්‍රීයයි. ඔබේ සැලැස්ම මෙතැනින් කළමනාකරණය කරන්න: {url}",
