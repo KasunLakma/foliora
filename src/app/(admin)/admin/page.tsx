@@ -17,7 +17,7 @@ export default async function AdminDashboard() {
     { label: "New accounts (7 days)", value: stats.newTenantsWeek },
     { label: "Messages sent (7 days)", value: stats.inquiriesWeek },
     { label: "People", value: stats.users },
-    { label: "Closed", value: stats.tenants.CLOSED },
+    { label: "Payments to check", value: stats.pendingPayments, highlight: stats.pendingPayments > 0 },
   ];
 
   return (

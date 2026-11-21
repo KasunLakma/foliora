@@ -483,3 +483,85 @@ model InquiryNote {
   @@index([inquiryId])
   @@map("inquiry_notes")
 }
+
+// ---------- Plans, subscriptions and bank-transfer payments (Phase 7b) ----------
+
+enum BillingPeriod {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+}
+
+// Plans are data, so prices and limits can change without changing code. Prices are in Sri Lankan rupees.
+model Plan {
+  id           String   @id @default(cuid())
+  key          String   @unique // "free", "pro", "agency"
+  name         String
+  monthlyPrice Int
+  yearlyPrice  Int
+  sortOrder    Int      @default(0) // higher = bigger plan
+  isActive     Boolean  @default(true)
+  limits       Json // for example { "photos": 200, "showreels": 5 }
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  subscriptions   Subscription[]
+  paymentRequests PaymentRequest[]
+
+  @@map("plans")
+}
+
+// A period of paid access. An account with no active subscription is on the Free plan.
+model Subscription {
+  id               String             @id @default(cuid())
+  tenantId         String
+  planId           String
+  status           SubscriptionStatus @default(ACTIVE)
+  period           BillingPeriod
+  startsAt         DateTime
+  endsAt           DateTime
+  paymentRequestId String?            @unique
+  createdAt        DateTime           @default(now())
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, status, endsAt])
+  @@map("subscriptions")
+}
+
+// "I want the Pro plan": the account pays by bank transfer, an admin checks the bank statement and approves.
+model PaymentRequest {
+  id            String        @id @default(cuid())
+  tenantId      String
+  planId        String
+  period        BillingPeriod
+  amount        Int // in rupees, copied from the plan at the time of the request
+  code          String        @unique // written in the bank transfer description, so the admin can find it
+  status        PaymentStatus @default(PENDING)
+  payerName     String?
+  bankReference String?
+  transferDate  DateTime?
+  paidMarkedAt  DateTime? // when the account said "I have paid"
+  reviewedById  String?
+  reviewedAt    DateTime?
+  rejectReason  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, createdAt])
+  @@index([status, createdAt])
+  @@map("payment_requests")
+}

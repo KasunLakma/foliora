@@ -10,6 +10,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { TodoKey } from "@/modules/profiles/completeness";
 import { ensureProfile, getProfile, scoreProfile } from "@/modules/profiles/service";
 import { getTenantPermissions } from "@/modules/roles/permissions";
+import { getCurrentPlan } from "@/modules/billing/service";
 import { countInbox } from "@/modules/inquiries/service";
 import { countPhotos } from "@/modules/photos/service";
 import { ensurePortfolio } from "@/modules/portfolio/service";
@@ -35,7 +36,7 @@ const TILES: { key: TileKey; icon: IconName; href?: string }[] = [
 const NEXT_STEPS: { key: "casting"; icon: IconName }[] = [{ key: "casting", icon: "film" }];
 
 export default async function PortalPage() {
-  const { t } = await getDictionary();
+  const { t, locale } = await getDictionary();
   const p = t.portal;
   const session = await auth();
   const user = session!.user;
@@ -74,6 +75,8 @@ export default async function PortalPage() {
     : [];
 
   const statusKey = (tenant?.status ?? "CLOSED") as keyof typeof p.status;
+  const currentPlan = user.activeTenantId ? await getCurrentPlan(user.activeTenantId) : null;
+  const planDate = new Intl.DateTimeFormat(locale === "si" ? "si-LK" : "en-GB", { dateStyle: "medium" });
   const siteHost = new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").host;
 
   return (
@@ -184,6 +187,25 @@ export default async function PortalPage() {
             className={buttonStyles({ size: "md", variant: "secondary" }) + " mt-4"}
           >
             {p.siteManage}
+          </Link>
+        </Card>
+      )}
+
+      {currentPlan && (
+        <Card>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-semibold tracking-[0.1em] uppercase">{p.planTitle}</h2>
+            <Badge tone={currentPlan.isFree ? "neutral" : "success"}>
+              {currentPlan.isFree ? p.planFree : currentPlan.name}
+            </Badge>
+          </div>
+          {currentPlan.endsAt && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {format(p.planUntil, { date: planDate.format(currentPlan.endsAt) })}
+            </p>
+          )}
+          <Link href="/portal/billing" className={buttonStyles({ size: "md", variant: "secondary" }) + " mt-4"}>
+            {p.planManage}
           </Link>
         </Card>
       )}

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { adminContext } from "@/modules/admin/guard";
 import { getTenantDetail } from "@/modules/admin/service";
+import { getCurrentPlan } from "@/modules/billing/service";
 import type { TenantStatusName } from "@/modules/admin/transitions";
 
 export const metadata = { title: "Account" };
@@ -17,6 +18,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
   if (!detail) notFound();
 
   const { tenant, counts, audit } = detail;
+  const plan = await getCurrentPlan(tenant.id);
   const profile = tenant.profiles[0];
   const portfolio = profile?.portfolio;
 
@@ -68,6 +70,15 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           <div>
             <dt className="text-xs font-medium tracking-wider text-white/45 uppercase">Stage name</dt>
             <dd className="mt-1 font-semibold">{profile?.stageName ?? "No profile"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium tracking-wider text-white/45 uppercase">Plan</dt>
+            <dd className="mt-1 font-semibold">
+              {plan.name}
+              {plan.endsAt && (
+                <span className="text-sm font-normal text-white/50"> · until {formatDate(plan.endsAt)}</span>
+              )}
+            </dd>
           </div>
         </dl>
 

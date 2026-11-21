@@ -33,17 +33,18 @@ export async function getPlatformRole(userId: string): Promise<PlatformRoleName 
 
 export async function getDashboardStats() {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const [byStatus, users, published, inquiriesWeek, newTenantsWeek] = await Promise.all([
+  const [byStatus, users, published, inquiriesWeek, newTenantsWeek, pendingPayments] = await Promise.all([
     prisma.tenant.groupBy({ by: ["status"], where: { deletedAt: null }, _count: { _all: true } }),
     prisma.user.count(),
     prisma.portfolio.count({ where: { status: "PUBLISHED" } }),
     prisma.inquiry.count({ where: { createdAt: { gte: weekAgo }, status: { not: "SPAM" } } }),
     prisma.tenant.count({ where: { createdAt: { gte: weekAgo }, deletedAt: null } }),
+    prisma.paymentRequest.count({ where: { status: "PENDING" } }),
   ]);
 
   const tenants: Record<TenantStatusName, number> = { PENDING: 0, ACTIVE: 0, SUSPENDED: 0, CLOSED: 0 };
   for (const group of byStatus) tenants[group.status] = group._count._all;
-  return { tenants, users, published, inquiriesWeek, newTenantsWeek };
+  return { tenants, users, published, inquiriesWeek, newTenantsWeek, pendingPayments };
 }
 
 export type TenantFilter = { status?: TenantStatusName; q?: string };
