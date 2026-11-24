@@ -9,7 +9,15 @@ import { format } from "@/lib/i18n/format";
 import { useI18n } from "@/lib/i18n/provider";
 import { cancelRequestAction, markPaidAction, requestPlanAction } from "@/modules/billing/actions";
 
-export type PlanView = { key: string; name: string; monthly: number; yearly: number; photos: number; showreels: number };
+export type PlanView = {
+  key: string;
+  name: string;
+  monthly: number;
+  yearly: number;
+  photos: number;
+  showreels: number;
+  applications: number | null;
+};
 
 export type RequestView = {
   id: string;
@@ -93,7 +101,10 @@ export function PlanPicker({ plans, canManage }: { plans: PlanView[]; canManage:
                   </div>
                 </div>
                 <p className="text-sm text-white/65">
-                  {format(b.limitPhotos, { count: plan.photos })} · {format(b.limitShowreels, { count: plan.showreels })}
+                  {format(b.limitPhotos, { count: plan.photos })} · {format(b.limitShowreels, { count: plan.showreels })} ·{" "}
+                  {plan.applications === null
+                    ? b.applicationsUnlimited
+                    : format(b.applicationsPerMonth, { count: plan.applications })}
                 </p>
                 <Button type="submit" name="planKey" value={plan.key} loading={pending}>
                   {format(b.request, { plan: plan.name })}

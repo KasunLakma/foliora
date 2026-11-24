@@ -53,8 +53,16 @@ describe("payment codes", () => {
 
 describe("plan limits", () => {
   it("reads the numbers and falls back for anything missing or wrong", () => {
-    expect(readLimits({ photos: 200, showreels: 7 })).toEqual({ photos: 200, showreels: 7 });
-    expect(readLimits({ photos: 200 })).toEqual({ photos: 200, showreels: DEFAULT_LIMITS.showreels });
+    expect(readLimits({ photos: 200, showreels: 7, applications: null })).toEqual({
+      photos: 200,
+      showreels: 7,
+      applications: null,
+    });
+    expect(readLimits({ photos: 200, applications: 10 })).toEqual({
+      photos: 200,
+      showreels: DEFAULT_LIMITS.showreels,
+      applications: 10,
+    });
     expect(readLimits({ photos: "lots", showreels: null })).toEqual(DEFAULT_LIMITS);
     expect(readLimits(null)).toEqual(DEFAULT_LIMITS);
     expect(readLimits("nonsense")).toEqual(DEFAULT_LIMITS);

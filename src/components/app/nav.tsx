@@ -15,7 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/portal", key: "home", icon: "home" },
   { href: "/portal/profile", key: "profile", icon: "user" },
   { href: "/portal/portfolio", key: "portfolio", icon: "image" },
-  { href: "/portal/casting", key: "casting", icon: "film", soon: true },
+  { href: "/portal/casting", key: "casting", icon: "film" },
   { href: "/portal/inbox", key: "inbox", icon: "mail" },
 ];
 

@@ -33,7 +33,6 @@ const TILES: { key: TileKey; icon: IconName; href?: string }[] = [
   { key: "inquiries", icon: "mail", href: "/portal/inbox" },
 ];
 
-const NEXT_STEPS: { key: "casting"; icon: IconName }[] = [{ key: "casting", icon: "film" }];
 
 export default async function PortalPage() {
   const { t, locale } = await getDictionary();
@@ -210,24 +209,19 @@ export default async function PortalPage() {
         </Card>
       )}
 
-      <Card className="p-2">
-        <h2 className="px-4 pt-4 pb-1 font-display text-lg font-semibold tracking-[0.1em] uppercase">
-          {p.comingNext}
-        </h2>
-        <ul className="divide-y divide-white/8">
-          {NEXT_STEPS.map((step) => (
-            <li key={step.key} className="flex items-center gap-4 px-4 py-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand/12 text-brand">
-                <Icon name={step.icon} size={22} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold">{p.steps[step.key].title}</span>
-                <span className="block text-sm text-muted-foreground">{p.steps[step.key].text}</span>
-              </span>
-              <Badge>{t.common.soon}</Badge>
-            </li>
-          ))}
-        </ul>
+      <Card>
+        <div className="flex items-center gap-4">
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand/12 text-brand">
+            <Icon name="film" size={22} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-semibold tracking-[0.1em] uppercase">{p.castingTitle}</h2>
+            <p className="text-sm text-muted-foreground">{p.castingText}</p>
+          </div>
+        </div>
+        <Link href="/portal/casting" className={buttonStyles({ size: "md", variant: "secondary" }) + " mt-4"}>
+          {p.castingOpen}
+        </Link>
       </Card>
 
       <details className="glass-card rounded-[1.75rem] px-5 py-4">

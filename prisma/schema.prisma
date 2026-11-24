@@ -566,3 +566,67 @@ model PaymentRequest {
   @@index([status, createdAt])
   @@map("payment_requests")
 }
+
+// ---------- Casting calls (Phase 5B) ----------
+
+enum CastingStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+enum CastingGender {
+  ANY
+  MALE
+  FEMALE
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  SHORTLISTED
+  NOT_SELECTED
+  WITHDRAWN
+}
+
+// A role that a production is looking for. Calls are platform data: staff write them, every talent can read the open ones.
+model CastingCall {
+  id           String        @id @default(cuid())
+  title        String
+  company      String? // the production
+  role         String?
+  description  String
+  gender       CastingGender @default(ANY)
+  ageMin       Int?
+  ageMax       Int?
+  location     String?
+  compensation String?
+  deadline     DateTime // the end of the last day to apply (Sri Lanka time)
+  status       CastingStatus @default(DRAFT)
+  publishedAt  DateTime?
+  createdById  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  applications CastingApplication[]
+
+  @@index([status, deadline])
+  @@map("casting_calls")
+}
+
+// "I would like this role." One per talent per call.
+model CastingApplication {
+  id        String            @id @default(cuid())
+  tenantId  String
+  callId    String
+  profileId String
+  message   String?
+  status    ApplicationStatus @default(SUBMITTED)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  call CastingCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, tenantId])
+  @@index([tenantId, createdAt])
+  @@map("casting_applications")
+}

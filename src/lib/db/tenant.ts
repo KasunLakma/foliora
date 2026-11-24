@@ -16,6 +16,7 @@ export const TENANT_SCOPED_MODELS = [
   "InquiryNote",
   "Subscription",
   "PaymentRequest",
+  "CastingApplication",
 ] as const;
 
 // Models with a tenantId column that are handled by hand.

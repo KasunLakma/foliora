@@ -2,8 +2,9 @@ import { randomInt } from "node:crypto";
 
 export type BillingPeriodName = "MONTHLY" | "YEARLY";
 
-export type PlanLimits = { photos: number; showreels: number };
-export const DEFAULT_LIMITS: PlanLimits = { photos: 15, showreels: 5 };
+/** applications = casting applications a month. null means unlimited. */
+export type PlanLimits = { photos: number; showreels: number; applications: number | null };
+export const DEFAULT_LIMITS: PlanLimits = { photos: 15, showreels: 5, applications: 3 };
 
 export function priceFor(plan: { monthlyPrice: number; yearlyPrice: number }, period: BillingPeriodName) {
   return period === "YEARLY" ? plan.yearlyPrice : plan.monthlyPrice;
@@ -34,9 +35,15 @@ export function makeCode(random: (max: number) => number = (max) => randomInt(ma
 
 export function readLimits(json: unknown): PlanLimits {
   const value = (json && typeof json === "object" ? json : {}) as Record<string, unknown>;
-  const number = (key: keyof PlanLimits) =>
+  const number = (key: "photos" | "showreels") =>
     typeof value[key] === "number" && Number.isFinite(value[key]) ? (value[key] as number) : DEFAULT_LIMITS[key];
-  return { photos: number("photos"), showreels: number("showreels") };
+  const applications =
+    value.applications === null
+      ? null
+      : typeof value.applications === "number" && Number.isFinite(value.applications)
+        ? value.applications
+        : DEFAULT_LIMITS.applications;
+  return { photos: number("photos"), showreels: number("showreels"), applications };
 }
 
 /** When several paid periods overlap, the biggest plan counts; among equals, the one that lasts longest. */

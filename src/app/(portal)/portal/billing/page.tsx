@@ -56,6 +56,7 @@ export default async function BillingPage() {
       yearly: p.yearlyPrice,
       photos: limits.photos,
       showreels: limits.showreels,
+      applications: limits.applications,
     };
   });
 
@@ -98,7 +99,10 @@ export default async function BillingPage() {
           {plan.endsAt ? format(b.activeUntil, { date: date.format(plan.endsAt) }) : b.freePlan}
         </p>
         <p className="text-sm text-white/65">
-          {format(b.limitPhotos, { count: plan.limits.photos })} · {format(b.limitShowreels, { count: plan.limits.showreels })}
+          {format(b.limitPhotos, { count: plan.limits.photos })} · {format(b.limitShowreels, { count: plan.limits.showreels })} ·{" "}
+          {plan.limits.applications === null
+            ? b.applicationsUnlimited
+            : format(b.applicationsPerMonth, { count: plan.limits.applications })}
         </p>
       </Card>
 
