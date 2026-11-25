@@ -195,6 +195,16 @@ export function Landing({
                       {feature}
                     </li>
                   ))}
+                  {info.soonFeatures.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3 text-sm text-white/55">
+                      <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-white/10 text-white/40">
+                        <Icon name="check" size={12} />
+                      </span>
+                      <span>
+                        {feature} <Badge className="ml-1 align-middle">{h.pricing.soon}</Badge>
+                      </span>
+                    </li>
+                  ))}
                 </ul>
                 <Link
                   href="/register"

@@ -132,6 +132,16 @@ export const en = {
     castingTitle: "Casting calls",
     castingText: "Browse open calls and apply with your portfolio.",
     castingOpen: "See open calls",
+    start: {
+      title: "Get started",
+      progress: "{done} of {total} done",
+      steps: {
+        profile: "Complete your profile",
+        photo: "Add your first photo",
+        work: "Add a work or a showreel",
+        publish: "Publish your page",
+      },
+    },
     permissions: "{count} permissions",
   },
   profile: {
@@ -550,6 +560,7 @@ export const en = {
       month: "per month",
       year: "or {price} per year",
       popular: "Most popular",
+      soon: "Soon",
       choose: "Choose {plan}",
       plans: {
         free: {
@@ -562,6 +573,7 @@ export const en = {
             "An inbox for messages",
             "Foliora badge on your page",
           ],
+          soonFeatures: [] as string[],
         },
         pro: {
           name: "Pro",
@@ -570,20 +582,18 @@ export const en = {
             "Everything in Free",
             "Up to 200 photos",
             "Unlimited casting applications",
-            "Your own domain",
             "No Foliora badge",
           ],
+          soonFeatures: ["Your own domain"],
         },
         agency: {
           name: "Agency",
           text: "For teams",
           features: [
             "Everything in Pro",
-            "Up to 10 talent profiles",
-            "Team members with roles",
-            "PDF comp cards with your name",
             "Priority support",
           ],
+          soonFeatures: ["Up to 10 talent profiles", "Team members with roles", "PDF comp cards with your name"],
         },
       },
     },
@@ -723,6 +733,15 @@ export const en = {
       notFound: "We could not find this application.",
     },
   },
+  errorPages: {
+    notFoundTitle: "Page not found",
+    notFoundText: "The page you are looking for does not exist, or it is not public.",
+    goHome: "Back to home",
+    errorTitle: "Something went wrong",
+    errorText: "Please try again. If it keeps happening, tell us and give this reference.",
+    retry: "Try again",
+    reference: "Reference: {code}",
+  },
 };
 
 export type Dictionary = typeof en;
@@ -859,6 +878,16 @@ export const si: Dictionary = {
     castingTitle: "කාස්ටින් ඇමතුම්",
     castingText: "විවෘත කාස්ටින් බලා ඔබේ portfolio එකත් සමඟ අයදුම් කරන්න.",
     castingOpen: "විවෘත ඇමතුම් බලන්න",
+    start: {
+      title: "පටන් ගන්න",
+      progress: "{total}න් {done}ක් අවසන්",
+      steps: {
+        profile: "ඔබේ පැතිකඩ සම්පූර්ණ කරන්න",
+        photo: "ඔබේ පළමු ඡායාරූපය එක් කරන්න",
+        work: "කෘතියක් හෝ showreel එකක් එක් කරන්න",
+        publish: "ඔබේ පිටුව පළ කරන්න",
+      },
+    },
     permissions: "අවසර {count}ක්",
   },
   profile: {
@@ -1277,6 +1306,7 @@ export const si: Dictionary = {
       month: "මාසයකට",
       year: "නැත්නම් වසරකට {price}",
       popular: "වඩාත්ම ජනප්‍රිය",
+      soon: "ඉක්මනින්",
       choose: "{plan} තෝරන්න",
       plans: {
         free: {
@@ -1289,6 +1319,7 @@ export const si: Dictionary = {
             "පණිවිඩ සඳහා inbox එක",
             "ඔබේ පිටුවේ Foliora ලාංඡනය",
           ],
+          soonFeatures: [] as string[],
         },
         pro: {
           name: "Pro",
@@ -1297,20 +1328,18 @@ export const si: Dictionary = {
             "Free වල සියල්ල",
             "ඡායාරූප 200ක් දක්වා",
             "අසීමිත කාස්ටින් අයදුම්පත්",
-            "ඔබේම domain එකක්",
             "Foliora ලාංඡනය නැත",
           ],
+          soonFeatures: ["ඔබේම domain එකක්"],
         },
         agency: {
           name: "Agency",
           text: "කණ්ඩායම් සඳහා",
           features: [
             "Pro වල සියල්ල",
-            "කලාකරුවන්ගේ පැතිකඩ 10ක් දක්වා",
-            "භූමිකා සහිත කණ්ඩායම් සාමාජිකයන්",
-            "ඔබේම නමින් PDF comp card",
             "ප්‍රමුඛතා සහාය",
           ],
+          soonFeatures: ["කලාකරුවන්ගේ පැතිකඩ 10ක් දක්වා", "භූමිකා සහිත කණ්ඩායම් සාමාජිකයන්", "ඔබේම නමින් PDF comp card"],
         },
       },
     },
@@ -1449,6 +1478,15 @@ export const si: Dictionary = {
       limit: "මෙම මාසයේ අයදුම්පත් {max}ම ඔබ භාවිතා කර ඇත. තවත් අයදුම් කිරීමට ඔබේ සැලැස්ම ඉහළ නංවන්න.",
       notFound: "මෙම අයදුම්පත සොයාගත නොහැකි විය.",
     },
+  },
+  errorPages: {
+    notFoundTitle: "පිටුව සොයාගත නොහැකි විය",
+    notFoundText: "ඔබ සොයන පිටුව නැත, නැත්නම් එය ප්‍රසිද්ධ නොවේ.",
+    goHome: "මුල් පිටුවට යන්න",
+    errorTitle: "යම් දෝෂයක් සිදු විය",
+    errorText: "කරුණාකර නැවත උත්සාහ කරන්න. නැවත නැවතත් සිදු වුවහොත් අපට මේ යොමුව සමඟ දන්වන්න.",
+    retry: "නැවත උත්සාහ කරන්න",
+    reference: "යොමුව: {code}",
   },
 };
 

@@ -16,6 +16,7 @@ import { countPhotos } from "@/modules/photos/service";
 import { ensurePortfolio } from "@/modules/portfolio/service";
 import { countShowreels } from "@/modules/showreel/service";
 import { countWorks } from "@/modules/works/service";
+import { onboardingSteps, type StartStepKey } from "@/modules/profiles/onboarding";
 
 const STATUS_TONE: Record<string, BadgeTone> = {
   PENDING: "warning",
@@ -25,6 +26,13 @@ const STATUS_TONE: Record<string, BadgeTone> = {
 };
 
 type TileKey = "photos" | "works" | "showreel" | "inquiries";
+
+const START_LINKS: Record<StartStepKey, string> = {
+  profile: "/portal/profile",
+  photo: "/portal/portfolio/photos",
+  work: "/portal/portfolio",
+  publish: "/portal/portfolio/publish",
+};
 
 const TILES: { key: TileKey; icon: IconName; href?: string }[] = [
   { key: "photos", icon: "image", href: "/portal/portfolio/photos" },
@@ -68,6 +76,18 @@ export default async function PortalPage() {
     if (portfolio) site = { slug: portfolio.slug, status: portfolio.status };
     counts.showreel = showreels;
   }
+
+  const start =
+    completeness && site
+      ? onboardingSteps({
+          profileMissing: completeness.missing,
+          photos: counts.photos ?? 0,
+          works: counts.works ?? 0,
+          showreels: counts.showreel ?? 0,
+          published: site.status === "PUBLISHED",
+        })
+      : null;
+  const startDone = start ? start.filter((step) => step.done).length : 0;
 
   const permissions = user.activeTenantId
     ? [...(await getTenantPermissions(user.id, user.activeTenantId))].sort()
@@ -167,6 +187,40 @@ export default async function PortalPage() {
           <Link href="/portal/profile" className={buttonStyles({ size: "md" }) + " mt-4"}>
             {completeness.percent === 100 ? p.viewProfile : p.continue}
           </Link>
+        </Card>
+      )}
+
+      {start && startDone < start.length && (
+        <Card className="ring-2 ring-brand/40">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-semibold tracking-[0.1em] uppercase">{p.start.title}</h2>
+            <span className="text-sm font-semibold text-brand">
+              {format(p.start.progress, { done: startDone, total: start.length })}
+            </span>
+          </div>
+          <ul className="mt-4 flex flex-col gap-2">
+            {start.map((step) => (
+              <li key={step.key}>
+                <Link
+                  href={START_LINKS[step.key]}
+                  className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-3 text-sm transition hover:bg-white/8"
+                >
+                  <span
+                    className={
+                      step.done
+                        ? "grid size-6 shrink-0 place-items-center rounded-full bg-success/20 text-success"
+                        : "grid size-6 shrink-0 place-items-center rounded-full bg-white/8 text-white/30"
+                    }
+                  >
+                    {step.done && <Icon name="check" size={14} />}
+                  </span>
+                  <span className={step.done ? "text-white/45 line-through" : "font-semibold"}>
+                    {p.start.steps[step.key]}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </Card>
       )}
 
